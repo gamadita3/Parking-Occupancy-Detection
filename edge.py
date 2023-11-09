@@ -58,7 +58,7 @@ for i in range(len(class_list)):
     detection_colors.append((b, g, r))
 
 def inference(frame):
-    print("Start Inference !!") 
+    
     detecting = model.predict(source=[frame], conf=0.45, save=False, imgsz=320)
     DP = detecting[0].numpy()
     print(DP)
@@ -97,7 +97,10 @@ def inference(frame):
 #----------------------------MOTION DETECTION-----------------------------------------#
 motion_detected = False
 start_time = time.time()
+
 def motion_detection(old_frame, new_frame):
+        global motion_detected
+        global start_time
         old_frame_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
         new_frame_gray = cv2.cvtColor(new_frame, cv2.COLOR_BGR2GRAY)
         frame_diff = cv2.absdiff(old_frame_gray, new_frame_gray)
@@ -116,23 +119,25 @@ def motion_detection(old_frame, new_frame):
 ########################################################################################
 
 def run():   
+    global motion_detected
+    global start_time
     ret, frame_initial = cap.read()  
     while True:
         ret, frame = cap.read()
         if not ret:
             print("Can't receive frame. Exiting ...")
             break
-        if motion_detected:
+        if  motion_detected:
+            print("Start Inference !!") 
             inference(frame)
             publish_image(frame) 
+            if (time.time() - start_time) > 10:
+                motion_detected = False
+                ret, frame_initial = cap.read()
+                print("Reset detection") 
         else:   
-            motion_detection(frame_initial, frame)
-                  
-        if motion_detected and (time.time() - start_time) > 10:
-            motion_detected = False
-            ret, frame_initial = cap.read()
-            print("Reset detection") 
-        
+            print("Motion Detected false") 
+            motion_detection(frame_initial, frame)        
 
 def main():
     initialize_mqtt()

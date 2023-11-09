@@ -2,7 +2,7 @@ import json
 import cv2
 import numpy as np
 import paho.mqtt.client as mqtt
-config = json.load(open(file="./main/config.json", encoding="utf-8"))
+config = json.load(open(file="./util/config.json", encoding="utf-8"))
 
 #----------------------------CV2 SETUP-----------------------------------------#
 cv2.namedWindow("stream", cv2.WINDOW_NORMAL)

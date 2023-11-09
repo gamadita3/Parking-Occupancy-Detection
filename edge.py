@@ -5,7 +5,7 @@ import random
 import numpy as np
 import paho.mqtt.client as mqtt
 from ultralytics import YOLO
-config = json.load(open(file="./config.json", encoding="utf-8"))
+config = json.load(open(file="./util/config.json", encoding="utf-8"))
 
 #----------------------------MQTT SETUP-----------------------------------------#
 mqttClient = mqtt.Client()
@@ -43,11 +43,11 @@ def setup_camera():
     return cap
 
 #----------------------------INFERENCE-----------------------------------------#
-coco_file = open("./coco.txt", "r")
+coco_file = open("./util/coco.txt", "r")
 class_list = coco_file.read().split("\n")
 coco_file.close()
 
-model = YOLO("yolov8n.pt", "v8")
+model = YOLO("./util/yolov8n.pt", "v8")
 detection_colors = []
 for i in range(len(class_list)):
     r = random.randint(0, 255)
@@ -56,7 +56,7 @@ for i in range(len(class_list)):
     detection_colors.append((b, g, r))
 
 def inference(frame):
-    detecting = model.predict(source=[frame], conf=0.45, save=False)
+    detecting = model.predict(source=[frame], conf=0.45, save=False, imgsz=320)
     DP = detecting[0].numpy()
     print(DP)
     

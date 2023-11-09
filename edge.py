@@ -32,6 +32,7 @@ def initialize_mqtt():
     return mqttClient
 
 def publish_image(image):
+    print("Publishing image")
     _, frame_encoded = cv2.imencode(".jpg", image)
     mqttClient.publish(config["topic"], frame_encoded.tobytes())
 
@@ -43,6 +44,7 @@ def setup_camera():
     return cap
 
 #----------------------------INFERENCE-----------------------------------------#
+inference = False
 coco_file = open("./util/coco.txt", "r")
 class_list = coco_file.read().split("\n")
 coco_file.close()
@@ -56,6 +58,7 @@ for i in range(len(class_list)):
     detection_colors.append((b, g, r))
 
 def inference(frame):
+    print("Start Inference !!") 
     detecting = model.predict(source=[frame], conf=0.45, save=False, imgsz=320)
     DP = detecting[0].numpy()
     print(DP)
@@ -90,18 +93,46 @@ def inference(frame):
                 2,
             )
     return frame
+
+#----------------------------MOTION DETECTION-----------------------------------------#
+motion_detected = False
+start_time = time.time()
+def motion_detection(old_frame, new_frame):
+        old_frame_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
+        new_frame_gray = cv2.cvtColor(new_frame, cv2.COLOR_BGR2GRAY)
+        frame_diff = cv2.absdiff(old_frame_gray, new_frame_gray)
+        _, thresh = cv2.threshold(frame_diff, 40, 255, cv2.THRESH_BINARY)
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        for contour in contours:           
+            if cv2.contourArea(contour) > 100: #threshold sensitivity set 100
+                x, y, w, h = cv2.boundingRect(contour)
+                cv2.rectangle(new_frame, (x, y), (x + w, y + h), (10, 10, 255), 2)
+                motion_detected = True
+                print("Motion Detected !!") 
+                start_time = time.time()
+        
     
 
 ########################################################################################
 
-def run():  
+def run():   
+    ret, frame_initial = cap.read()  
     while True:
         ret, frame = cap.read()
         if not ret:
             print("Can't receive frame. Exiting ...")
             break
-        inference(frame)
-        publish_image(frame)
+        if motion_detected:
+            inference(frame)
+            publish_image(frame) 
+        else:   
+            motion_detection(frame_initial, frame)
+                  
+        if motion_detected and (time.time() - start_time) > 10:
+            motion_detected = False
+            ret, frame_initial = cap.read()
+            print("Reset detection") 
+        
 
 def main():
     initialize_mqtt()

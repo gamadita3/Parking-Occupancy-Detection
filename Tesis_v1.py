@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import paho.mqtt.client as mqtt
 config = json.load(open(file="./config.json", encoding="utf-8"))
-
+#tescommitrasp
 #----------------------------MQTT SETUP-----------------------------------------#
 mqttClient = mqtt.Client()
 

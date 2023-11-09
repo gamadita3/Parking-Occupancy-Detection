@@ -33,7 +33,7 @@ def publish_image(image):
     _, frame_encoded = cv2.imencode(".jpg", image)
     mqttClient.publish(config["topic"], frame_encoded.tobytes())
 
-#----------------------------CAM SETUP-----------------------------------------#
+#----------------------------CV2 SETUP-----------------------------------------#
 cap = cv2.VideoCapture(0)
 def setup_camera():
     cap.set(3, config["res_width"])
@@ -50,8 +50,8 @@ def run():
 
 def main():
     initialize_mqtt()
-    setup_camera()
-    run()
+    #setup_camera()
+    #run()
 
 if __name__ == '__main__':
     main()

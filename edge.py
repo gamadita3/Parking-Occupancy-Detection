@@ -43,6 +43,17 @@ def setup_camera():
     cap.set(4, config["frame_height"])
     return cap
 
+def collect_frames():
+    frames = [] 
+    for _ in range(30):
+        ret, frame = cap.read()
+        if not ret:
+            raise Exception("Could not read from camera.")
+        frames.append(frame)
+    cap.release()
+    return frames
+        
+
 #----------------------------INFERENCE-----------------------------------------#
 inference = False
 coco_file = open("./util/coco.txt", "r")
@@ -57,42 +68,47 @@ for i in range(len(class_list)):
     b = random.randint(0, 255)
     detection_colors.append((b, g, r))
 
-def inference(frame):
-    
-    detecting = model.predict(source=[frame], conf=0.45, save=False, imgsz=320)
-    DP = detecting[0].numpy()
-    print(DP)
-    
-    if len(DP) != 0:
-        for i in range(len(detecting[0])):
-            print(i)
+def inference(frames):
+    global motion_detected
+    new_frames = []
+    for frame in frames:
+        motion_detected = False
+        detecting = model.predict(source=[frame], conf=0.45, save=False, imgsz=320)       
+        DP = detecting[0].numpy() 
+        print(DP)
+        if len(DP) != 0:
+            for i in range(len(detecting[0])):
+                print(i)
 
-            boxes = detecting[0].boxes
-            box = boxes[i]  # returns one box
-            clsID = box.cls.numpy()[0]
-            conf = box.conf.numpy()[0]
-            bb = box.xyxy.numpy()[0]
+                boxes = detecting[0].boxes
+                box = boxes[i]  # returns one box
+                clsID = box.cls.numpy()[0]
+                conf = box.conf.numpy()[0]
+                bb = box.xyxy.numpy()[0]
 
-            cv2.rectangle(
-                frame,
-                (int(bb[0]), int(bb[1])),
-                (int(bb[2]), int(bb[3])),
-                detection_colors[int(clsID)],
-                3,
-            )
+                cv2.rectangle(
+                    frame,
+                    (int(bb[0]), int(bb[1])),
+                    (int(bb[2]), int(bb[3])),
+                    detection_colors[int(clsID)],
+                    3,
+                )
 
-            # Display class name and confidence
-            font = cv2.FONT_HERSHEY_COMPLEX
-            cv2.putText(
-                frame,
-                class_list[int(clsID)] + " " + str(round(conf, 3)) + "%",
-                (int(bb[0]), int(bb[1]) - 10),
-                font,
-                1,
-                (255, 255, 255),
-                2,
-            )
-    return frame
+                # Display class name and confidence
+                font = cv2.FONT_HERSHEY_COMPLEX
+                cv2.putText(
+                    frame,
+                    class_list[int(clsID)] + " " + str(round(conf, 3)) + "%",
+                    (int(bb[0]), int(bb[1]) - 10),
+                    font,
+                    1,
+                    (255, 255, 255),
+                    2,
+                )
+        new_frames = frame.append()
+        for frame in new_frames:
+            publish_image(frame)
+    #return frame
 
 #----------------------------MOTION DETECTION-----------------------------------------#
 motion_detected = False
@@ -112,9 +128,7 @@ def motion_detection(old_frame, new_frame):
                 cv2.rectangle(new_frame, (x, y), (x + w, y + h), (10, 10, 255), 2)
                 motion_detected = True
                 print("Motion Detected !!") 
-                start_time = time.time()
-        
-    
+                start_time = time.time()      
 
 ########################################################################################
 
@@ -122,22 +136,25 @@ def run():
     global motion_detected
     global start_time
     ret, frame_initial = cap.read()  
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("Can't receive frame. Exiting ...")
-            break
-        if  motion_detected:
-            print("Start Inference !!") 
-            inference(frame)
-            publish_image(frame) 
-            if (time.time() - start_time) > 10:
-                motion_detected = False
+    while True:       
+        try:
+            if  motion_detected:             
+                print("Start Inference !!")   
+                frames = collect_frames()             
+                inference(frames)              
+                '''if (time.time() - start_time) > 10:
+                    motion_detected = False
+                    ret, frame_initial = cap.read()
+                    print("Reset detection")'''
                 ret, frame_initial = cap.read()
-                print("Reset detection") 
-        else:   
-            print("Motion Detected false") 
-            motion_detection(frame_initial, frame)        
+            else:   
+                ret, frame = cap.read()
+                if not ret:
+                    raise Exception("Could not read from camera.")
+                print("Motion Detected false") 
+                motion_detection(frame_initial, frame)  
+        except Exception as error:
+            print("Error:", error)     
 
 def main():
     initialize_mqtt()

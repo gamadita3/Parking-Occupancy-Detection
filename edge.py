@@ -44,13 +44,14 @@ def setup_camera():
     return cap
 
 def collect_frames():
+    print("Capturing 100 frame with 5 fps")
     frames = [] 
-    for _ in range(30):
+    for _ in range(100):
         ret, frame = cap.read()
         if not ret:
             raise Exception("Could not read from camera.")
         frames.append(frame)
-    cap.release()
+        time.sleep(0.2)
     return frames
         
 
@@ -71,6 +72,7 @@ for i in range(len(class_list)):
 def inference(frames):
     global motion_detected
     new_frames = []
+    print("Start Inference !!")  
     for frame in frames:
         motion_detected = False
         detecting = model.predict(source=[frame], conf=0.45, save=False, imgsz=320)       
@@ -105,9 +107,10 @@ def inference(frames):
                     (255, 255, 255),
                     2,
                 )
-        new_frames = frame.append()
-        for frame in new_frames:
-            publish_image(frame)
+        new_frames.append(frame)
+    for frame in new_frames:
+        publish_image(frame)
+        time.sleep(0.2)
     #return frame
 
 #----------------------------MOTION DETECTION-----------------------------------------#
@@ -139,7 +142,6 @@ def run():
     while True:       
         try:
             if  motion_detected:             
-                print("Start Inference !!")   
                 frames = collect_frames()             
                 inference(frames)              
                 '''if (time.time() - start_time) > 10:

@@ -25,7 +25,7 @@ def initialize_mqtt():
         else:
             print("Failed to connect, return code %d\n", rc)        
     mqtt_client.on_connect = on_connect
-    mqtt_client.connect(mqttConfig["HOST_ADDRES"], mqttConfig["PORT"])
+    mqtt_client.connect(mqttConfig["HOST_ADDRESS"], mqttConfig["PORT"])
     #mqtt_client.subscribe(config["topic"])
     mqtt_client.loop_start()
     #mqtt_client.on_message = on_message

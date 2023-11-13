@@ -15,7 +15,7 @@ mqtt_client = mqtt.Client()
 #    pass
 
 def on_publish(client, userdata, msg):
-    print(f"pub {msg}")
+    #print(f"pub {msg}")
     pass
 
 def initialize_mqtt():
@@ -33,7 +33,7 @@ def initialize_mqtt():
     return mqtt_client
 
 def publish_image(image):
-    print("Publishing image")
+    #print(f'Publishing image')
     _, _frameEncoded = cv2.imencode(".jpg", image)
     mqtt_client.publish(mqttConfig["TOPIC"], _frameEncoded.tobytes())
 
@@ -58,15 +58,16 @@ def collect_frames():
     print(f'Start capture images for {imageConfig["CAPTURE_TIME"]} seconds')
     frames = []
     _startCapture = time.time()
-    print(_startCapture)
+    #print(_startCapture)
     while (time.time() - _startCapture) < imageConfig["CAPTURE_TIME"]:
         ret, frame = cap.read()
         if not ret:
             raise Exception("Could not read from camera.")
         frames.append(frame)
-        #time.sleep(imageConfig["CAPTURE_DELAY"])
-    print(f'Total time: {time.time() - _startCapture}')
-    print(f'Total frames: {frames.count()}')
+        time.sleep(imageConfig["CAPTURE_DELAY"])
+    _totalTime = time.time() - _startCapture
+    print(f'Total time: {_totalTime}')
+    print(f'Total frames: {len(frames)}')
     return frames
     
         
@@ -88,8 +89,10 @@ for i in range(len(class_list)):
 def inference(frames):
     global motion_detected
     _newFrames = []
+    _countFrame = 0
     print("Start Inference !!")  
     for frame in frames:
+        _countFrame += 1
         motion_detected = False
         detecting = model.predict(source=[frame], conf=0.45, save=False, imgsz=320)       
         DP = detecting[0].numpy() 
@@ -124,9 +127,14 @@ def inference(frames):
                     2,
                 )
         _newFrames.append(frame)
+        print(f'Total frames: {len(frames)}')
+        print(f'inference frame : {_countFrame}')
+    _countPub = 0
     for frame in _newFrames:
+        _countPub += 1
+        print(f'Publishing image {_countPub} of {len(_newFrames)}')
         publish_image(frame)
-        time.sleep(0.2)
+        #time.sleep(0.1)
     #return frame
 
 #----------------------------MOTION DETECTION-----------------------------------------#
@@ -146,8 +154,9 @@ def motion_detection(old_frame, new_frame):
                 x, y, w, h = cv2.boundingRect(contour)
                 cv2.rectangle(new_frame, (x, y), (x + w, y + h), (10, 10, 255), 2)
                 motion_detected = True
-                print("Motion Detected !!") 
                 start_time = time.time()      
+        if motion_detected:
+            print("Motion Detected !!")
 
 ########################################################################################
 
@@ -159,7 +168,7 @@ def run():
         try:
             if  motion_detected:             
                 frames = collect_frames()             
-                #inference(frames)              
+                inference(frames)              
                 '''if (time.time() - start_time) > 10:
                     motion_detected = False
                     ret, frame_initial = cap.read()

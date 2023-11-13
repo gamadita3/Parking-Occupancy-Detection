@@ -5,10 +5,11 @@ import random
 import numpy as np
 import paho.mqtt.client as mqtt
 from ultralytics import YOLO
-config = json.load(open(file="./util/config.json", encoding="utf-8"))
+mqttConfig = json.load(open(file="./util/mqtt_config.json", encoding="utf-8"))
+imageConfig = json.load(open(file="./util/image_config.json", encoding="utf-8"))
 
 #----------------------------MQTT SETUP-----------------------------------------#
-mqttClient = mqtt.Client()
+mqtt_client = mqtt.Client()
 
 #def on_message(client, userdata, msg):
 #    pass
@@ -23,28 +24,28 @@ def initialize_mqtt():
             print("Connected to MQTT Broker!")
         else:
             print("Failed to connect, return code %d\n", rc)        
-    mqttClient.on_connect = on_connect
-    mqttClient.connect(config["host_address"], config["port"])
-    #mqttClient.subscribe(config["topic"])
-    mqttClient.loop_start()
-    #mqttClient.on_message = on_message
-    mqttClient.on_publish = on_publish
-    return mqttClient
+    mqtt_client.on_connect = on_connect
+    mqtt_client.connect(mqttConfig["HOST_ADDRES"], mqttConfig["PORT"])
+    #mqtt_client.subscribe(config["topic"])
+    mqtt_client.loop_start()
+    #mqtt_client.on_message = on_message
+    mqtt_client.on_publish = on_publish
+    return mqtt_client
 
 def publish_image(image):
     print("Publishing image")
-    _, frame_encoded = cv2.imencode(".jpg", image)
-    mqttClient.publish(config["topic"], frame_encoded.tobytes())
+    _, _frameEncoded = cv2.imencode(".jpg", image)
+    mqtt_client.publish(mqttConfig["TOPIC"], _frameEncoded.tobytes())
 
 #----------------------------CV2 SETUP-----------------------------------------#
 cap = cv2.VideoCapture(0)
 def setup_camera():
-    cap.set(3, config["frame_width"])
-    cap.set(4, config["frame_height"])
+    cap.set(3, imageConfig["FRAME_WIDTH"])
+    cap.set(4, imageConfig["FRAME_HEIGHT"])
     return cap
 
-def collect_frames():
-    print("Capturing 100 frame with 5 fps")
+def collect_frames():   
+    '''print(fCapturing 100 frame with 5 fps")
     frames = [] 
     for _ in range(100):
         ret, frame = cap.read()
@@ -52,7 +53,22 @@ def collect_frames():
             raise Exception("Could not read from camera.")
         frames.append(frame)
         time.sleep(0.2)
+    return frames'''
+    
+    print(f'Start capture images for {imageConfig["CAPTURE_TIME"]} seconds')
+    frames = []
+    _startCapture = time.time()
+    print(_startCapture)
+    while (time.time() - _startCapture) < imageConfig["CAPTURE_TIME"]:
+        ret, frame = cap.read()
+        if not ret:
+            raise Exception("Could not read from camera.")
+        frames.append(frame)
+        #time.sleep(imageConfig["CAPTURE_DELAY"])
+    print(f'Total time: {time.time() - _startCapture}')
+    print(f'Total frames: {frames.count()}')
     return frames
+    
         
 
 #----------------------------INFERENCE-----------------------------------------#
@@ -71,7 +87,7 @@ for i in range(len(class_list)):
 
 def inference(frames):
     global motion_detected
-    new_frames = []
+    _newFrames = []
     print("Start Inference !!")  
     for frame in frames:
         motion_detected = False
@@ -107,8 +123,8 @@ def inference(frames):
                     (255, 255, 255),
                     2,
                 )
-        new_frames.append(frame)
-    for frame in new_frames:
+        _newFrames.append(frame)
+    for frame in _newFrames:
         publish_image(frame)
         time.sleep(0.2)
     #return frame
@@ -143,7 +159,7 @@ def run():
         try:
             if  motion_detected:             
                 frames = collect_frames()             
-                inference(frames)              
+                #inference(frames)              
                 '''if (time.time() - start_time) > 10:
                     motion_detected = False
                     ret, frame_initial = cap.read()
@@ -153,7 +169,7 @@ def run():
                 ret, frame = cap.read()
                 if not ret:
                     raise Exception("Could not read from camera.")
-                print("Motion Detected false") 
+                #print("Motion Detected false") 
                 motion_detection(frame_initial, frame)  
         except Exception as error:
             print("Error:", error)     

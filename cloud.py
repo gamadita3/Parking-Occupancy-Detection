@@ -2,14 +2,14 @@ import json
 import cv2
 import numpy as np
 import paho.mqtt.client as mqtt
-config = json.load(open(file="./util/config.json", encoding="utf-8"))
+mqttConfig = json.load(open(file="./util/mqtt_config.json", encoding="utf-8"))
 
 #----------------------------CV2 SETUP-----------------------------------------#
 cv2.namedWindow("stream", cv2.WINDOW_NORMAL)
 
 
 #----------------------------MQTT SETUP-----------------------------------------#
-mqttClient = mqtt.Client()
+mqtt_client = mqtt.Client()
 
 def on_message(client, userdata, msg):
     image_data = np.frombuffer(msg.payload, dtype=np.uint8)
@@ -26,18 +26,18 @@ def initialize_mqtt():
             print("Connected to MQTT Broker!")
         else:
             print("Failed to connect, return code %d\n", rc)        
-    mqttClient.on_connect = on_connect
-    mqttClient.connect(config["host_address"], config["port"])
-    mqttClient.subscribe(config["topic"])
-    mqttClient.on_message = on_message
-    #mqttClient.on_publish = on_publish
-    return mqttClient
+    mqtt_client.on_connect = on_connect
+    mqtt_client.connect(mqttConfig["HOST_ADDRESS"], mqttConfig["PORT"])
+    mqtt_client.subscribe(mqttConfig["TOPIC"])
+    mqtt_client.on_message = on_message
+    #mqtt_client.on_publish = on_publish
+    return mqtt_client
 
 ########################################################################################
 
 def run():  
     while True:
-        mqttClient.loop()
+        mqtt_client.loop()
         # Break the loop if 'q' is pressed
         if cv2.waitKey(1) & 0xFF == ord('q'):
             cv2.destroyAllWindows()

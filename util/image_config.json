@@ -1,0 +1,6 @@
+{
+    "FRAME_WIDTH": 640,
+    "FRAME_HEIGHT": 480,
+    "CAPTURE_TIME": 10,
+    "CAPTURE_DELAY": 0.1
+}

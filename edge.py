@@ -63,6 +63,8 @@ def collect_frames():
         ret, frame = cap.read()
         if not ret:
             raise Exception("Could not read from camera.")
+        #print(f'frame : {frame}')
+        publish_image(frame)
         frames.append(frame)
         time.sleep(imageConfig["CAPTURE_DELAY"])
     _totalTime = time.time() - _startCapture
@@ -93,11 +95,10 @@ def inference(frames):
     print("Start Inference !!")  
     for frame in frames:
         _countFrame += 1
-        motion_detected = False
         detecting = model.predict(source=[frame], conf=0.45, save=False, imgsz=320)       
         DP = detecting[0].numpy() 
-        print(DP)
-        if len(DP) != 0:
+        print(detecting)
+        '''if len(DP) != 0:
             for i in range(len(detecting[0])):
                 print(i)
 
@@ -125,7 +126,7 @@ def inference(frames):
                     1,
                     (255, 255, 255),
                     2,
-                )
+                )'''
         _newFrames.append(frame)
         print(f'Total frames: {len(frames)}')
         print(f'inference frame : {_countFrame}')
@@ -168,11 +169,12 @@ def run():
         try:
             if  motion_detected:             
                 frames = collect_frames()             
-                inference(frames)              
+                #inference(frames)              
                 '''if (time.time() - start_time) > 10:
                     motion_detected = False
                     ret, frame_initial = cap.read()
                     print("Reset detection")'''
+                motion_detected = False
                 ret, frame_initial = cap.read()
             else:   
                 ret, frame = cap.read()

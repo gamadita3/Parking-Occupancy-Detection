@@ -17,10 +17,11 @@ def on_message(client, userdata, msg):
     cv2.imshow("raw_stream", frame_decode)'''
     
     frames_data = msg.payload.split(b',')
-    frames = [cv2.imdecode(np.frombuffer(frame, dtype=np.uint8), 1) for frame in frames_data]
-    for frame in frames:
-        cv2.imshow("Received Frame", frame)
-        #cv2.waitKey(1)
+    for frame in frames_data:
+        frame_data = np.frombuffer(frame, dtype=np.uint8)
+        frame_decode = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)
+        cv2.imshow("Received Frame", frame_decode)
+        cv2.waitKey(1)
 
 #def on_publish(client, userdata, msg):
 #    pass

@@ -38,9 +38,10 @@ def publish_frame(frame):
     mqtt_client.publish(mqttConfig["TOPIC"], _frameEncoded.tobytes())
 
 def publish_batches(frames):
-    frames_batch = [cv2.imencode('.jpg', frame)[1].tobytes() for frame in frames]
-    batch_message = b','.join(frames_batch)
-    mqtt_client.publish(mqttConfig["TOPIC"], batch_message)
+    for frame in frames:
+        _, _frameEncoded = cv2.imencode(".jpg", frame) 
+        frames_batch = b','.join(_frameEncoded.tobytes())
+    mqtt_client.publish(mqttConfig["TOPIC"], frames_batch)
 
 #----------------------------CV2 SETUP-----------------------------------------#
 cap = cv2.VideoCapture(0)

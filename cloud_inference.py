@@ -6,7 +6,7 @@ from PIL import Image
 import paho.mqtt.client as mqtt
 from ultralytics import YOLO
 mqttConfig = json.load(open(file="./util/mqtt_config.json", encoding="utf-8"))
-imageConfig = json.load(open(file="./util/image_config.json", encoding="utf-8"))
+frameConfig = json.load(open(file="./util/frame_config.json", encoding="utf-8"))
 
 #----------------------------CV2 SETUP-----------------------------------------#
 cv2.namedWindow("stream", cv2.WINDOW_NORMAL)
@@ -14,16 +14,16 @@ cv2.namedWindow("stream", cv2.WINDOW_NORMAL)
 
 #----------------------------MQTT SETUP-----------------------------------------#
 mqtt_client = mqtt.Client()
-received_image = None
+received_frame = None
 
 def on_message(client, userdata, msg):
     global received_image
-    image_data = np.frombuffer(msg.payload, dtype=np.uint8)
-    image_decode = cv2.imdecode(image_data, cv2.IMREAD_UNCHANGED)
-    #print(f'frame: {image_decode}')
-    cv2.imshow("raw_stream", image_decode)
+    frame_data = np.frombuffer(msg.payload, dtype=np.uint8)
+    frame_decode = cv2.imdecode(frame_data, cv2.IMREAD_UNCHANGED)
+    #print(f'frame: {frame_decode}')
+    cv2.imshow("raw_stream", frame_decode)
     #cv2.waitKey(1)
-    received_image = image_decode
+    received_frame = frame_decode
     
 
 #def on_publish(client, userdata, msg):

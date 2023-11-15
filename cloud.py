@@ -12,10 +12,15 @@ cv2.namedWindow("stream", cv2.WINDOW_NORMAL)
 mqtt_client = mqtt.Client()
 
 def on_message(client, userdata, msg):
-    image_data = np.frombuffer(msg.payload, dtype=np.uint8)
-    image_decode = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
-    cv2.imshow("stream", image_decode)
-    cv2.waitKey(1)
+    '''frame_data = np.frombuffer(msg.payload, dtype=np.uint8)
+    frame_decode = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)
+    cv2.imshow("raw_stream", frame_decode)'''
+    
+    frames_data = msg.payload.split(b',')
+    frames = [cv2.imdecode(np.frombuffer(frame, dtype=np.uint8), 1) for frame in frames_data]
+    for frame in frames:
+        cv2.imshow("Received Frame", frame)
+        #cv2.waitKey(1)
 
 #def on_publish(client, userdata, msg):
 #    pass

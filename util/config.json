@@ -1,8 +1,0 @@
-{
-    "host_address": "192.168.1.3",
-    "port": 1883,
-    "topic": "stream",
-    
-    "frame_width": 640,
-    "frame_height": 480
-}

@@ -6,7 +6,7 @@ import numpy as np
 import paho.mqtt.client as mqtt
 from ultralytics import YOLO
 mqttConfig = json.load(open(file="./util/mqtt_config.json", encoding="utf-8"))
-imageConfig = json.load(open(file="./util/image_config.json", encoding="utf-8"))
+frameConfig = json.load(open(file="./util/frame_config.json", encoding="utf-8"))
 
 #----------------------------MQTT SETUP-----------------------------------------#
 mqtt_client = mqtt.Client()
@@ -32,20 +32,25 @@ def initialize_mqtt():
     mqtt_client.on_publish = on_publish
     return mqtt_client
 
-def publish_image(image):
-    #print(f'Publishing image')
-    _, _frameEncoded = cv2.imencode(".jpg", image)
+def publish_frame(frame):
+    #print(f'Publishing frame')
+    _, _frameEncoded = cv2.imencode(".jpg", frame)
     mqtt_client.publish(mqttConfig["TOPIC"], _frameEncoded.tobytes())
+
+def publish_batches(frames):
+    frames_batch = [cv2.imencode('.jpg', frame)[1].tobytes() for frame in frames]
+    batch_message = b','.join(frames_batch)
+    mqtt_client.publish(mqttConfig["TOPIC"], batch_message)
 
 #----------------------------CV2 SETUP-----------------------------------------#
 cap = cv2.VideoCapture(0)
 def setup_camera():
-    cap.set(3, imageConfig["FRAME_WIDTH"])
-    cap.set(4, imageConfig["FRAME_HEIGHT"])
+    cap.set(3, frameConfig["FRAME_WIDTH"])
+    cap.set(4, frameConfig["FRAME_HEIGHT"])
     return cap
 
 def collect_frames():   
-    '''print(fCapturing 100 frame with 5 fps")
+    '''print(f'Capturing 100 frame with 5 fps')
     frames = [] 
     for _ in range(100):
         ret, frame = cap.read()
@@ -55,18 +60,18 @@ def collect_frames():
         time.sleep(0.2)
     return frames'''
     
-    print(f'Start capture images for {imageConfig["CAPTURE_TIME"]} seconds')
+    print(f'Start capture images for {frameConfig["CAPTURE_TIME"]} seconds')
     frames = []
     _startCapture = time.time()
     #print(_startCapture)
-    while (time.time() - _startCapture) < imageConfig["CAPTURE_TIME"]:
+    while (time.time() - _startCapture) < frameConfig["CAPTURE_TIME"]:
         ret, frame = cap.read()
         if not ret:
             raise Exception("Could not read from camera.")
         #print(f'frame : {frame}')
-        publish_image(frame)
+        #publish_frame(frame)
         frames.append(frame)
-        time.sleep(imageConfig["CAPTURE_DELAY"])
+        time.sleep(frameConfig["CAPTURE_DELAY"])
     _totalTime = time.time() - _startCapture
     print(f'Total time: {_totalTime}')
     print(f'Total frames: {len(frames)}')
@@ -129,12 +134,12 @@ def inference(frames):
                 )'''
         _newFrames.append(frame)
         print(f'Total frames: {len(frames)}')
-        print(f'inference frame : {_countFrame}')
+        print(f'Inference frame : {_countFrame}')
     _countPub = 0
     for frame in _newFrames:
         _countPub += 1
         print(f'Publishing image {_countPub} of {len(_newFrames)}')
-        publish_image(frame)
+        publish_frame(frame)
         #time.sleep(0.1)
     #return frame
 
@@ -168,8 +173,9 @@ def run():
     while True:       
         try:
             if  motion_detected:             
-                frames = collect_frames()             
-                #inference(frames)              
+                frames = collect_frames() 
+                publish_batches(frames)            
+                #inference(frames)         //disable inference     
                 '''if (time.time() - start_time) > 10:
                     motion_detected = False
                     ret, frame_initial = cap.read()

@@ -1,4 +1,5 @@
 import json
+import os
 import time
 import cv2
 import random
@@ -11,8 +12,8 @@ frameConfig = json.load(open(file="./util/frame_config.json", encoding="utf-8"))
 #----------------------------MQTT SETUP-----------------------------------------#
 mqtt_client = mqtt.Client()
 
-#def on_message(client, userdata, msg):
-#    pass
+def on_message(client, userdata, msg):
+    pass
 
 def on_publish(client, userdata, msg):
     #print(f"pub {msg}")
@@ -33,7 +34,7 @@ def initialize_mqtt():
     return mqtt_client
 
 def publish_frame(frame):
-    #print(f'Publishing frame')
+    print(f'Publishing frame')
     _, _frameEncoded = cv2.imencode(".jpg", frame)
     mqtt_client.publish(mqttConfig["TOPIC"], _frameEncoded.tobytes())
 
@@ -69,13 +70,20 @@ def collect_frames():
     print(f'Total frames: {len(frames)}')
     return frames
 
+#----------------------------CV2 IMAGES-----------------------------------------#
+
+def get_images():
+    image_folder = frameConfig['FOLDER_IMAGES']
+    frames = [os.path.join(image_folder, img) for img in os.listdir(image_folder) if img.endswith(".jpg")]
+    return frames
+
 #----------------------------INFERENCE-----------------------------------------#
 inference = False
-coco_file = open("./util/coco.txt", "r")
+coco_file = open("./util/label.txt", "r")
 class_list = coco_file.read().split("\n")
 coco_file.close()
 
-model = YOLO("./util/yolov8n.pt", "v8")
+model = YOLO("./util/parking.pt")
 detection_colors = []
 for i in range(len(class_list)):
     r = random.randint(0, 255)
@@ -163,19 +171,21 @@ def motion_detection(old_frame, new_frame):
 def run():   
     global motion_detected
     global start_time
-    ret, frame_initial = cap.read()  
+    ret, frame_initial = get_images()[random.randint(0, len(get_images())-1)]
+    image_index = 0
     while True:     
         try:
-            if  motion_detected:             
-                frames = collect_frames() 
-                #publish_batches(frames)            
+            if  motion_detected:
+                print("Motion detected", error)    
+                frames = get_images()[image_index:image_index+100]
                 inference(frames)
                 motion_detected = False
-                ret, frame_initial = cap.read()
+                image_index += 100
+                if image_index >= len(get_images()):
+                    image_index = 0
+                ret, frame_initial = get_images()[image_index]
             else:   
-                ret, frame = cap.read()
-                if not ret:
-                    raise Exception("Could not read from camera.")
+                ret, frame = get_images()[image_index]
                 motion_detection(frame_initial, frame)  
         except Exception as error:
             print("Error:", error)     

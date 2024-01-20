@@ -2,5 +2,6 @@
     "FRAME_WIDTH": 320,
     "FRAME_HEIGHT": 240,
     "CAPTURE_TIME": 20,
-    "CAPTURE_DELAY": 0.1
+    "CAPTURE_DELAY": 0.1,
+    "FOLDER_IMAGES": "./images"
 }

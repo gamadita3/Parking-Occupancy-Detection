@@ -45,30 +45,6 @@ def publish_batches(frames):
         frames_batch += frameEncoded.tobytes() + b','
     mqtt_client.publish(mqttConfig["TOPIC"], frames_batch)
     
-#----------------------------CV2 SETUP-----------------------------------------#
-cap = cv2.VideoCapture(0)
-def setup_camera():
-    cap.set(3, frameConfig["FRAME_WIDTH"])
-    cap.set(4, frameConfig["FRAME_HEIGHT"])
-    return cap
-
-def collect_frames():       
-    print(f'Start capture images for {frameConfig["CAPTURE_TIME"]} seconds')
-    frames = []
-    _startCapture = time.time()
-    #print(_startCapture)
-    while (time.time() - _startCapture) < frameConfig["CAPTURE_TIME"]:
-        ret, frame = cap.read()
-        if not ret:
-            raise Exception("Could not read from camera.")
-        #print(f'frame : {frame}')
-        #publish_frame(frame)
-        frames.append(frame)
-        #time.sleep(frameConfig["CAPTURE_DELAY"])
-    _totalTime = time.time() - _startCapture
-    print(f'Total time: {_totalTime}')
-    print(f'Total frames: {len(frames)}')
-    return frames
 
 #----------------------------CV2 IMAGES-----------------------------------------#
 

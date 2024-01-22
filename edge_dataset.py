@@ -50,7 +50,7 @@ def publish_batches(frames):
 
 def get_images():
     image_folder = frameConfig['FOLDER_IMAGES']
-    frames = [os.path.join(image_folder, img) for img in os.listdir(image_folder) if img.endswith(".jpg")]
+    frames = [cv2.imread(os.path.join(image_folder, img)) for img in os.listdir(image_folder) if img.endswith(".jpg")]
     return frames
 
 #----------------------------INFERENCE-----------------------------------------#
@@ -66,60 +66,8 @@ for i in range(len(class_list)):
     g = random.randint(0, 255)
     b = random.randint(0, 255)
     detection_colors.append((b, g, r))
-
-def inference(frames):
-    global motion_detected
-    _newFrames = []
-    _countFrame = 0
-    print("Start Inference !!")  
-    _startCapture = time.time()
-    for frame in frames:
-        _countFrame += 1
-        detecting = model.predict(source=[frame], conf=0.45, save=False, imgsz=320)       
-        DP = detecting[0].numpy() 
-        print(detecting)
-        if len(DP) != 0:
-            for i in range(len(detecting[0])):
-                print(i)
-
-                boxes = detecting[0].boxes
-                box = boxes[i]  # returns one box
-                clsID = box.cls.numpy()[0]
-                conf = box.conf.numpy()[0]
-                bb = box.xyxy.numpy()[0]
-
-                cv2.rectangle(
-                    frame,
-                    (int(bb[0]), int(bb[1])),
-                    (int(bb[2]), int(bb[3])),
-                    detection_colors[int(clsID)],
-                    3,
-                )
-
-                # Display class name and confidence
-                font = cv2.FONT_HERSHEY_COMPLEX
-                cv2.putText(
-                    frame,
-                    class_list[int(clsID)] + " " + str(round(conf, 3)) + "%",
-                    (int(bb[0]), int(bb[1]) - 10),
-                    font,
-                    1,
-                    (255, 255, 255),
-                    2,
-                )
-        _newFrames.append(frame)
-        #publish_frame(frame)
-        print(f'Total frames: {len(frames)}')
-        print(f'Inference frame : {_countFrame}')
-    _countPub = 0
-    _totalTime = time.time() - _startCapture
-    print(f'Total time: {_totalTime}')
-    '''for frame in _newFrames:
-        _countPub += 1
-        print(f'Publishing image {_countPub} of {len(_newFrames)}')
-        publish_frame(frame)
-        #time.sleep(0.1)'''
-    #return frame
+    
+#def inference():
 
 #----------------------------MOTION DETECTION-----------------------------------------#
 motion_detected = False
@@ -141,34 +89,37 @@ def motion_detection(old_frame, new_frame):
                 start_time = time.time()      
         if motion_detected:
             print("Motion Detected !!")
+            
+#----------------------------CV2 show image-----------------------------------------#   
+def show_images(frame):
+    cv2.imshow('Image', frame)
+    cv2.waitKey(30)   
+    cv2.destroyAllWindows()     
 
 ########################################################################################
 
 def run():   
     global motion_detected
     global start_time
-    ret, frame_initial = get_images()[random.randint(0, len(get_images())-1)]
+    frames = get_images()
+    frame_initial = frames[random.randint(0, len(frames)-1)]
     image_index = 0
-    while True:     
+    for frame in frames:     
         try:
             if  motion_detected:
-                print("Motion detected", error)    
-                frames = get_images()[image_index:image_index+100]
-                inference(frames)
+                print("Motion detected")    
+                #inference(frames)
                 motion_detected = False
-                image_index += 100
-                if image_index >= len(get_images()):
-                    image_index = 0
-                ret, frame_initial = get_images()[image_index]
+                show_images(frame)
+                frame_initial = frame
             else:   
-                ret, frame = get_images()[image_index]
-                motion_detection(frame_initial, frame)  
+                frame_detect = frame
+                motion_detection(frame_initial, frame_detect)  
         except Exception as error:
             print("Error:", error)     
 
 def main():
     initialize_mqtt()
-    setup_camera()
     run()
 
 if __name__ == '__main__':

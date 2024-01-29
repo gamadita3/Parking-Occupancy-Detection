@@ -3,5 +3,5 @@
     "FRAME_HEIGHT": 240,
     "CAPTURE_TIME": 20,
     "CAPTURE_DELAY": 0.1,
-    "FOLDER_IMAGES": "./images"
+    "FOLDER_IMAGES": "./Dataset_parkinglot-1/test/images"
 }

@@ -110,7 +110,7 @@ def motion_detection(old_frame, new_frame):
         new_frame_gray = cv2.cvtColor(new_frame, cv2.COLOR_BGR2GRAY)
         frame_diff = cv2.absdiff(old_frame_gray, new_frame_gray)        
         _, thresh = cv2.threshold(frame_diff, frameConfig['THRESHOLD_MD'], 255, cv2.THRESH_BINARY)
-        #show_images_opencv(thresh)
+        show_images_opencv("thresh", thresh)
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) 
         for contour in contours:           
             if cv2.contourArea(contour) > 100: #threshold sensitivity set 100
@@ -150,11 +150,11 @@ def video_run():
                 inference_start_time = time.time()  # Record start time of inference
                 inference(initial_frame)
                 inference_end_time = time.time()  # Record end time of inference
-                inference_duration = inference_end_time - inference_start_time  # Calculate duration of inference
-                ret, initial_frame = video.read()
+                inference_duration = inference_end_time - inference_start_time  # Calculate duration of inference         
                 if (time.time() - start_time) > frameConfig["INFERENCE_DURATION"]:
                     motion_detected = False
-                    print("Reset detection")     
+                    print("Reset detection")  
+                    ret, initial_frame = video.read()   
                 skip_frame_count = int(inference_duration * frameConfig["FRAMERATE_TARGET"]) - 1 # Calculate number of frames to skip based on inference duration
             else:   
                 count += 1
@@ -163,6 +163,7 @@ def video_run():
                 if not ret:
                     raise Exception("Failed to read next frame.")
                 motion_detection(initial_frame, next_frame)
+                ret, initial_frame = ret, next_frame
             loop_end_time = time.time()  # Record end time of the loop
             loop_duration = loop_end_time - loop_start_time  # Calculate duration of the loop
             time_to_sleep = max(0, (1 / frameConfig["FRAMERATE_TARGET"]) - loop_duration)  # Calculate time to sleep to maintain target frame rate

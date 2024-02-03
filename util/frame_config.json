@@ -3,6 +3,10 @@
     "FRAME_HEIGHT": 240,
     "CAPTURE_TIME": 20,
     "CAPTURE_DELAY": 0.1,
+    "THRESHOLD_MD": 55,
+    "FRAMERATE_TARGET": 30,
+    "INFERENCE_DURATION": 10,
+    "IMGSZ": 640,
     "FOLDER_IMAGES": "./Dataset_parkinglot-1/test/images",
     "FOLDER_VIDEOS": "./Dataset_parkinglot-ITB/Parking-ITB-C.mp4"
 }

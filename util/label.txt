@@ -1,2 +1,2 @@
-space-empty
-space-occupied
+empty
+occupied

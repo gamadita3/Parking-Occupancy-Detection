@@ -6,6 +6,7 @@ import cv2
 import csv
 import psutil
 import threading
+import copy
 from PIL import Image
 from ultralytics import YOLO
 from functools import wraps
@@ -38,7 +39,7 @@ detection_colors.append((10, 10, 255))
     
 def inference(frame):
     print("Start Inference !!")  
-    detecting = model(source=frame, imgsz=frameConfig["IMGSZ"])            
+    detecting = model(source=frame, imgsz=frameConfig["IMGSZ"], conf=frameConfig["CONFIDENCE"])            
     DP = detecting[0].numpy()
     print("total detection :",len(DP))
     if len(DP) != 0:
@@ -76,25 +77,29 @@ def inference(frame):
     
    
 #----------------------------MOTION DETECTION-----------------------------------------#
-def motion_detection(old_frame, new_frame):
-        global motion_detected
-        global md_start_time
-        global md_count
-        old_frame_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
-        new_frame_gray = cv2.cvtColor(new_frame, cv2.COLOR_BGR2GRAY)
-        frame_diff = cv2.absdiff(old_frame_gray, new_frame_gray)        
-        _, thresh = cv2.threshold(frame_diff, frameConfig['THRESHOLD_MD'], 255, cv2.THRESH_BINARY)
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) 
-        for contour in contours:           
-            if cv2.contourArea(contour) > 100: #threshold sensitivity set 100
-                x, y, w, h = cv2.boundingRect(contour)
-                cv2.rectangle(new_frame, (x, y), (x + w, y + h), (10, 10, 255), 2)
-                motion_detected = True
-                #md_count += 1
-                md_start_time = time.time()  
-                break
-        if motion_detected:
-            print("Motion Detected : ", md_count)
+def motion_detection(old_frame_md, new_frame_md):
+    global motion_detected
+    global md_start_time
+    global md_count
+    contour_frame = copy.copy(new_frame_md) 
+    old_frame_gray = cv2.cvtColor(old_frame_md, cv2.COLOR_BGR2GRAY)
+    new_frame_gray = cv2.cvtColor(new_frame_md, cv2.COLOR_BGR2GRAY)
+    frame_diff = cv2.absdiff(old_frame_gray, new_frame_gray)    
+    _, thresh = cv2.threshold(frame_diff, frameConfig['THRESHOLD_MD'], 255, cv2.THRESH_BINARY)
+    #show_images_opencv("threshold", thresh)
+    #show_images_opencv("raw", new_frame_md)
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) 
+    print("total contours :",len(contours))
+    for contour in contours:                
+        if cv2.contourArea(contour) > frameConfig['CONTOUR_SENSITIVITY']:
+            print("contour area : ",cv2.contourArea(contour))
+            x, y, w, h = cv2.boundingRect(contour)
+            cv2.rectangle(contour_frame, (x, y), (x + w, y + h), (10, 10, 255), 2)
+            motion_detected = True
+            md_start_time = time.time()     
+            #show_images_opencv("contour", contour_frame)
+            md_count += 1
+            break
 
 #----------------------------MONITOR CPU RAM USAGE-----------------------------------------#
 def capture_cpu_usage():
@@ -104,7 +109,7 @@ def capture_cpu_usage():
         writer = csv.writer(file)
         writer.writerow(['Time', 'CPU Usage (%)','RAM Usage (%)'])
         while video_run_flag:
-            cpu_percent = psutil.cpu_percent(interval=1)  # Set capture cpu interval to 1 second
+            cpu_percent = psutil.cpu_percent(interval=0.5)  # Set capture cpu interval to 0.5 second
             ram_percent = psutil.virtual_memory().percent
             #print("CPU : ",cpu_percent)
             writer.writerow([time.time(), cpu_percent,ram_percent])
@@ -117,25 +122,22 @@ def video_run():
     global md_start_time
     global md_count 
     global video_run_flag
-    
+    md_count = 0
+    motion_detected = False # Motion detection
+    skip_frame_count = 0  # Initialize skip frame count
+    video_run_flag = True
     ret, initial_frame = video.read()
     if not ret:
         print("Failed to read video")
         return
-    md_count = 0
-    motion_detected = False # Motion detection
-    skip_frame_count = 0  # Initialize skip frame count
-    
-    video_run_flag = True
     capture_cpu_usage_thread = threading.Thread(target=capture_cpu_usage)
     capture_cpu_usage_thread.start()
     while True: 
         masterloop_start_time = time.time()
         loop_start_time = time.time()  # Record start time of the loop
+        #motion_detected = False
         try:
             if motion_detected:
-                #md_count += 1
-                
                 if skip_frame_count > 0:  # Check if there are frames to skip
                     skip_frame_count -= 1  # Decrement skip frame count
                     ret, initial_frame = video.read()  # Read next frame to skip
@@ -152,20 +154,17 @@ def video_run():
                        
                 if (time.time() - md_start_time) > frameConfig["INFERENCE_DURATION"]:
                     motion_detected = False
-                    md_count += 1
                     print("Reset detection")  
                     ret, initial_frame = video.read()  
                      
                 skip_frame_count = int(inference_duration * frameConfig["FRAMERATE_TARGET"]) - 1 # Calculate number of frames to skip based on inference duration
             else:   
-                #md_count += 1
                 ret, next_frame = video.read()
                 if not ret:
-                    raise Exception("Failed to read next frame.")
-                
+                    raise Exception("Failed to read next frame.") 
                 motion_detection(initial_frame, next_frame)
                 ret, initial_frame = ret, next_frame
-                
+
             loop_end_time = time.time()  # Record end time of the loop
             loop_duration = loop_end_time - loop_start_time  # Calculate duration of the loop
             time_to_sleep = max(0, (1 / frameConfig["FRAMERATE_TARGET"]) - loop_duration)  # Calculate time to sleep to maintain target frame rate

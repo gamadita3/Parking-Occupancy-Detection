@@ -1,7 +1,6 @@
 {
-    "CSV_CPU": "./monitor_result/cpu_ram_usage_40_5-3.csv",
-    "MODEL": "./util/parkiritbv2-d.onnx",
+    "CSV_CPU": "./monitor_result/cpu_ram_usage.csv",
+    "MODEL": "./model/parkiritbv3-v5-320.onnx",
     "LABEL": "./util/label.txt",
-    "FOLDER_IMAGES": "./Dataset_parkinglot-1/test/images",
-    "VIDEO": "./Dataset_parkinglot-ITB/Parking-ITB-C.mp4"
+    "VIDEO": "./dataset/2feb.mp4"
 }

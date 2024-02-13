@@ -90,7 +90,9 @@ def motion_detection(old_frame, new_frame):
                 x, y, w, h = cv2.boundingRect(contour)
                 cv2.rectangle(new_frame, (x, y), (x + w, y + h), (10, 10, 255), 2)
                 motion_detected = True
-                md_start_time = time.time()      
+                #md_count += 1
+                md_start_time = time.time()  
+                break
         if motion_detected:
             print("Motion Detected : ", md_count)
 
@@ -132,7 +134,7 @@ def video_run():
         loop_start_time = time.time()  # Record start time of the loop
         try:
             if motion_detected:
-                md_count += 1
+                #md_count += 1
                 
                 if skip_frame_count > 0:  # Check if there are frames to skip
                     skip_frame_count -= 1  # Decrement skip frame count
@@ -150,12 +152,13 @@ def video_run():
                        
                 if (time.time() - md_start_time) > frameConfig["INFERENCE_DURATION"]:
                     motion_detected = False
+                    md_count += 1
                     print("Reset detection")  
                     ret, initial_frame = video.read()  
                      
                 skip_frame_count = int(inference_duration * frameConfig["FRAMERATE_TARGET"]) - 1 # Calculate number of frames to skip based on inference duration
             else:   
-                md_count += 1
+                #md_count += 1
                 ret, next_frame = video.read()
                 if not ret:
                     raise Exception("Failed to read next frame.")
@@ -171,6 +174,7 @@ def video_run():
             
         except Exception as error:
             print("Error:", error)
+            print("Total Motion Detected : ", md_count)
             break
     video_run_flag = False
 

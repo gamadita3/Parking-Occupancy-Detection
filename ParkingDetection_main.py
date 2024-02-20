@@ -17,7 +17,8 @@ dirConfig = json.load(open(file="./util/dir_config.json", encoding="utf-8"))
 
 #----------------------------CV2 show image-----------------------------------------#   
 def show_images_opencv(window, frame):
-    cv2.imshow(window, frame)
+    frame_show = cv2.resize(frame, (854,480))
+    cv2.imshow(window, frame_show)
     cv2.waitKey(1)
     
  #----------------------------OPENCV GET VIDEO-----------------------------------------#   
@@ -38,41 +39,70 @@ detection_colors.append((10, 255, 10))
 detection_colors.append((10, 10, 255))
     
 def inference(frame):
+    global total_objectdetection
+    global false_positive
+    global false_negative
+    global total_empty_detection
+    global total_occupied_detection
+    
+    total_empty_detection = 0
+    total_occupied_detection = 0
+    
     print("Start Inference !!")  
-    detecting = model(source=frame, imgsz=frameConfig["IMGSZ"], conf=frameConfig["CONFIDENCE"])            
+    detecting = model(source=frame, task="detect", imgsz=frameConfig["IMGSZ"], conf=frameConfig["CONFIDENCE"])
+    total_objectdetection += 1            
     DP = detecting[0].numpy()
     print("total detection :",len(DP))
-    if len(DP) != 0:
-        for i in range(len(DP)):
-            try:
-                boxes = detecting[0].boxes
-                box = boxes[i]  # returns one box
-                clsID = box.cls.numpy()[0]
-                conf = box.conf.numpy()[0]
-                bb = box.xyxy.numpy()[0]
+    for i in range(len(DP)):
+        try:
+            boxes = detecting[0].boxes
+            box = boxes[i]  # returns one box
+            clsID = box.cls.numpy()[0]
+            conf = box.conf.numpy()[0]
+            bb = box.xyxy.numpy()[0]
+            
+            if clsID == 0:
+                total_empty_detection += 1
+            else:
+                total_occupied_detection +=1
+                
+            cv2.rectangle(
+                frame,
+                (int(bb[0]), int(bb[1])),
+                (int(bb[2]), int(bb[3])),
+                detection_colors[int(clsID)],
+                3,
+            )
 
-                cv2.rectangle(
-                    frame,
-                    (int(bb[0]), int(bb[1])),
-                    (int(bb[2]), int(bb[3])),
-                    detection_colors[int(clsID)],
-                    3,
-                )
-
-                # Display class name and confidence
-                font = cv2.FONT_HERSHEY_PLAIN
-                cv2.putText(
-                    frame,
-                    class_list[int(clsID)] + " " + str(round(conf, 3)) + "%",
-                    (int(bb[0]), int(bb[1]) - 10),
-                    font,
-                    1,
-                    (255, 255, 255),
-                    2,
-                )
-            except Exception as error:
-                print("Error inference:", error)
-                break
+            # Display class name and confidence
+            font = cv2.FONT_HERSHEY_PLAIN
+            cv2.putText(
+                frame,
+                class_list[int(clsID)] + " " + str(round(conf, 3)) + "%",
+                (int(bb[0]), int(bb[1]) - 10),
+                font,
+                1,
+                (255, 255, 255),
+                2,
+            )
+        except Exception as error:
+            print("Error inference:", error)
+            break
+    
+    if len(DP) > 12:
+        print("False Positive occured")
+        false_positive += 1
+        image_filename = f"fp_{false_positive}.jpg"
+        save_path = os.path.join(dirConfig["FALSEPOSITVE"], image_filename)
+        cv2.imwrite(save_path, frame)
+    elif len(DP) < 12:
+        print("False Negative occured")
+        false_positive += 1
+        image_filename = f"fn_{false_positive}.jpg"
+        save_path = os.path.join(dirConfig["FALSENEGATIVE"], image_filename)
+        cv2.imwrite(save_path, frame)
+    print("Empty : ", total_empty_detection )
+    print("Occupied : ", total_occupied_detection )
     return frame
     
    
@@ -80,25 +110,23 @@ def inference(frame):
 def motion_detection(old_frame_md, new_frame_md):
     global motion_detected
     global md_start_time
-    global md_count
+    
     contour_frame = copy.copy(new_frame_md) 
     old_frame_gray = cv2.cvtColor(old_frame_md, cv2.COLOR_BGR2GRAY)
     new_frame_gray = cv2.cvtColor(new_frame_md, cv2.COLOR_BGR2GRAY)
     frame_diff = cv2.absdiff(old_frame_gray, new_frame_gray)    
-    _, thresh = cv2.threshold(frame_diff, frameConfig['THRESHOLD_MD'], 255, cv2.THRESH_BINARY)
-    #show_images_opencv("threshold", thresh)
+    _, thresh = cv2.threshold(frame_diff, frameConfig['THRESHOLD_MD'], 255, cv2.THRESH_BINARY)   
     #show_images_opencv("raw", new_frame_md)
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) 
-    print("total contours :",len(contours))
+    #print("total contours :",len(contours))
     for contour in contours:                
         if cv2.contourArea(contour) > frameConfig['CONTOUR_SENSITIVITY']:
-            print("contour area : ",cv2.contourArea(contour))
+            #print("contour area : ",cv2.contourArea(contour))
             x, y, w, h = cv2.boundingRect(contour)
             cv2.rectangle(contour_frame, (x, y), (x + w, y + h), (10, 10, 255), 2)
+            show_images_opencv("contour", contour_frame)
             motion_detected = True
-            md_start_time = time.time()     
-            #show_images_opencv("contour", contour_frame)
-            md_count += 1
+            md_start_time = time.time()  
             break
 
 #----------------------------MONITOR CPU RAM USAGE-----------------------------------------#
@@ -119,23 +147,31 @@ def capture_cpu_usage():
 
 def video_run():  
     global motion_detected
+    global total_objectdetection
     global md_start_time
-    global md_count 
     global video_run_flag
-    md_count = 0
-    motion_detected = False # Motion detection
-    skip_frame_count = 0  # Initialize skip frame count
+    global false_positive
+    global false_negative
+    
+    reset_count = 0
+    total_objectdetection = 0
+    false_positive = 0
+    false_negative = 0
+    skip_frame_count = 0
+    motion_detected = False
     video_run_flag = True
+    
     ret, initial_frame = video.read()
     if not ret:
         print("Failed to read video")
         return
+    
     capture_cpu_usage_thread = threading.Thread(target=capture_cpu_usage)
     capture_cpu_usage_thread.start()
+    
     while True: 
         masterloop_start_time = time.time()
         loop_start_time = time.time()  # Record start time of the loop
-        #motion_detected = False
         try:
             if motion_detected:
                 if skip_frame_count > 0:  # Check if there are frames to skip
@@ -154,6 +190,7 @@ def video_run():
                        
                 if (time.time() - md_start_time) > frameConfig["INFERENCE_DURATION"]:
                     motion_detected = False
+                    reset_count += 1
                     print("Reset detection")  
                     ret, initial_frame = video.read()  
                      
@@ -173,7 +210,8 @@ def video_run():
             
         except Exception as error:
             print("Error:", error)
-            print("Total Motion Detected : ", md_count)
+            print("Total Object Detection process : ", reset_count)
+            print("Total object detection frame : ", total_objectdetection)
             break
     video_run_flag = False
 
@@ -185,8 +223,6 @@ if __name__ == '__main__':
     print("START PARKING DETECTION")
     main()
     end_time = time.time()
-    print("START : ", start_time)
-    print("END : ", end_time)
     print("TOTAL TIME : ",(end_time-start_time))
     
 

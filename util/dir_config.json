@@ -1,6 +1,8 @@
 {
     "CSV_CPU": "./monitor_result/cpu_ram_usage.csv",
-    "MODEL": "./model/parkiritbv3-v5-320.onnx",
+    "MODEL": "./model/parkiritbv3-v8-320.onnx",
     "LABEL": "./util/label.txt",
-    "VIDEO": "./dataset/2feb.mp4"
+    "VIDEO": "./dataset/2feb.mp4",
+    "FALSEPOSITIVE": "./falsepositive",
+    "FALSENEGATIVE": "./falsenegative"
 }

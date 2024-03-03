@@ -92,13 +92,13 @@ def inference(frame):
     if len(DP) > 12:
         print("False Positive occured")
         false_positive += 1
-        image_filename = f"fp_{false_positive}.jpg"
-        save_path = os.path.join(dirConfig["FALSEPOSITVE"], image_filename)
+        image_filename = f"fp_{false_positive}_empty{total_empty_detection}_occ{total_occupied_detection}.jpg"
+        save_path = os.path.join(dirConfig["FALSEPOSITIVE"], image_filename)
         cv2.imwrite(save_path, frame)
     elif len(DP) < 12:
         print("False Negative occured")
-        false_positive += 1
-        image_filename = f"fn_{false_positive}.jpg"
+        false_negative += 1
+        image_filename = f"fn_{false_negative}_empty{total_empty_detection}_occ{total_occupied_detection}.jpg"
         save_path = os.path.join(dirConfig["FALSENEGATIVE"], image_filename)
         cv2.imwrite(save_path, frame)
     print("Empty : ", total_empty_detection )
@@ -110,6 +110,7 @@ def inference(frame):
 def motion_detection(old_frame_md, new_frame_md):
     global motion_detected
     global md_start_time
+    global md
     
     contour_frame = copy.copy(new_frame_md) 
     old_frame_gray = cv2.cvtColor(old_frame_md, cv2.COLOR_BGR2GRAY)
@@ -124,8 +125,12 @@ def motion_detection(old_frame_md, new_frame_md):
             #print("contour area : ",cv2.contourArea(contour))
             x, y, w, h = cv2.boundingRect(contour)
             cv2.rectangle(contour_frame, (x, y), (x + w, y + h), (10, 10, 255), 2)
-            show_images_opencv("contour", contour_frame)
+            #show_images_opencv("contour", contour_frame)
             motion_detected = True
+            md += 1
+            image_filename_md = f"md_{md}.jpg"
+            save_path_md = os.path.join(dirConfig["MOTIONDETECTION"], image_filename_md)
+            cv2.imwrite(save_path_md, contour_frame)
             md_start_time = time.time()  
             break
 
@@ -148,12 +153,14 @@ def capture_cpu_usage():
 def video_run():  
     global motion_detected
     global total_objectdetection
-    global md_start_time
+    #global md_start_time
     global video_run_flag
     global false_positive
     global false_negative
+    global md
     
     reset_count = 0
+    md = 0
     total_objectdetection = 0
     false_positive = 0
     false_negative = 0
@@ -184,17 +191,19 @@ def video_run():
                 inference_start_time = time.time()  # Record start time of inference
                 inferenced_frame = inference(initial_frame)
                 show_images_opencv("INFERENCE", inferenced_frame)
-                inference_end_time = time.time()  # Record end time of inference
-                
-                inference_duration = inference_end_time - inference_start_time  # Calculate duration of inference  
+                inference_end_time = time.time()  # Record end time of inference 
                        
                 if (time.time() - md_start_time) > frameConfig["INFERENCE_DURATION"]:
                     motion_detected = False
                     reset_count += 1
                     print("Reset detection")  
-                    ret, initial_frame = video.read()  
+                    ret, initial_frame = video.read()
+                
+                inference_duration = inference_end_time - inference_start_time  # Calculate duration of inference
+                #print("inf dur :",inference_duration)
                      
-                skip_frame_count = int(inference_duration * frameConfig["FRAMERATE_TARGET"]) - 1 # Calculate number of frames to skip based on inference duration
+                skip_frame_count = int(inference_duration * frameConfig["FRAMERATE_TARGET"]) # Calculate number of frames to skip based on inference duration
+                print("total skip frame :", skip_frame_count)
             else:   
                 ret, next_frame = video.read()
                 if not ret:
@@ -205,6 +214,7 @@ def video_run():
             loop_end_time = time.time()  # Record end time of the loop
             loop_duration = loop_end_time - loop_start_time  # Calculate duration of the loop
             time_to_sleep = max(0, (1 / frameConfig["FRAMERATE_TARGET"]) - loop_duration)  # Calculate time to sleep to maintain target frame rate
+            #print("sleep time : ",time_to_sleep)
             time.sleep(time_to_sleep)  # Sleep to maintain target frame rate
             print("FPS per loop : ", (1/(time.time() - masterloop_start_time)))
             

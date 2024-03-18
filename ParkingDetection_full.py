@@ -103,41 +103,14 @@ def inference(frame):
         image_filename = f"fn_{false_negative}_empty{total_empty_detection}_occ{total_occupied_detection}.jpg"
         save_path = os.path.join(dirConfig["FALSENEGATIVE"], image_filename)
         cv2.imwrite(save_path, frame)
+    image_filename = f"sample.jpg"
+    save_path = os.path.join(dirConfig["MOTIONDETECTION"], image_filename)
+    cv2.imwrite(save_path, frame)
     print("Empty : ", total_empty_detection )
     print("Occupied : ", total_occupied_detection )
     statustime = datetime.now()
     write_status.writerow([statustime.strftime("%H:%M:%S %d:%m:%Y"),total_empty_detection,total_occupied_detection,(total_empty_detection+total_occupied_detection)])
     return frame
-    
-   
-#----------------------------MOTION DETECTION-----------------------------------------#
-def motion_detection(old_frame_md, new_frame_md):
-    global motion_detected
-    global md_start_time
-    global md
-    
-    contour_frame = copy.copy(new_frame_md) 
-    old_frame_gray = cv2.cvtColor(old_frame_md, cv2.COLOR_BGR2GRAY)
-    new_frame_gray = cv2.cvtColor(new_frame_md, cv2.COLOR_BGR2GRAY)
-    frame_diff = cv2.absdiff(old_frame_gray, new_frame_gray)    
-    _, thresh = cv2.threshold(frame_diff, frameConfig['THRESHOLD_MD'], 255, cv2.THRESH_BINARY)   
-    #show_images_opencv("raw", new_frame_md)
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) 
-    #print("total contours :",len(contours))
-    for contour in contours:                
-        if cv2.contourArea(contour) > frameConfig['CONTOUR_SENSITIVITY']:
-            #print("contour area : ",cv2.contourArea(contour))
-            x, y, w, h = cv2.boundingRect(contour)
-            cv2.rectangle(contour_frame, (x, y), (x + w, y + h), (10, 10, 255), 2)
-            #show_images_opencv("contour", contour_frame)
-            motion_detected = True
-            print("motion detected")
-            md += 1
-            image_filename_md = f"md_{md}.jpg"
-            save_path_md = os.path.join(dirConfig["MOTIONDETECTION"], image_filename_md)
-            #cv2.imwrite(save_path_md, contour_frame)
-            md_start_time = time.time()  
-            break
 
 #----------------------------MONITOR CPU RAM USAGE-----------------------------------------#
 def capture_cpu_usage():
@@ -158,7 +131,6 @@ def capture_cpu_usage():
 ##############################################################################################################################   
 
 def video_run():  
-    global motion_detected
     global total_objectdetection
     global video_run_flag
     global false_positive
@@ -166,15 +138,13 @@ def video_run():
     global md
     global write_status
     
-    reset_count = 0
     md = 0
     total_objectdetection = 0
     false_positive = 0
     false_negative = 0
     skip_frame_count = 0
     motion_detected = False
-    video_run_flag = True 
-    skip = False       
+    video_run_flag = True        
     
     ret, initial_frame = video.read()
     if not ret:
@@ -183,6 +153,7 @@ def video_run():
     
     capture_cpu_usage_thread = threading.Thread(target=capture_cpu_usage)
     capture_cpu_usage_thread.start()
+    
     with open(dirConfig["CSV_FPS"], mode='w', newline='') as file:
         write_fps = csv.writer(file)
         write_fps.writerow(['FPS'])
@@ -191,58 +162,29 @@ def video_run():
             write_status.writerow(['time','empty','occupied','total_detection'])
             while True: 
                 masterloop_start_time = time.time()
-                loop_start_time = time.time()  # Record start time of the loop
                 try:
                     if skip_frame_count > 0:  # Check if there are frames to skip
-                            skip_frame_count -= 1  # Decrement skip frame count
-                            ret, initial_frame = video.read()  # Read next frame to skip
-                            if not ret:
-                                raise Exception("Failed to read frame during skip.")
-                            continue  # Skip the rest of the loop
-                            
-                    if motion_detected:
-                        inferenced_frame = inference(initial_frame)
-                        show_images_opencv("INFERENCE", inferenced_frame)
-                        motion_detected = False
-                        skip = True
-                        reset_count += 1
-                        ret, initial_frame = video.read()
-                             
-                        '''if (time.time() - md_start_time) > frameConfig["INFERENCE_DURATION"]:
-                            motion_detected = False
-                            reset_count += 1
-                            print("Reset detection")  
-                            ret, initial_frame = video.read()'''
-                    
-                    else:   
-                        ret, next_frame = video.read()
+                        skip_frame_count -= 1  # Decrement skip frame count
+                        ret, initial_frame = video.read()  # Read next frame to skip
                         if not ret:
-                            raise Exception("Failed to read next frame.") 
-                        motion_detection(initial_frame, next_frame)
-                        ret, initial_frame = ret, next_frame
-                        #show_images_opencv("RAW",initial_frame)
-
-                    loop_end_time = time.time()
-                    loop_duration = loop_end_time - loop_start_time
-                    time_to_sleep = max(0, (1 / frameConfig["FRAMERATE_TARGET"]) - loop_duration)  # Calculate time to sleep to maintain target frame rate
-                    if time_to_sleep != 0 :
-                        time.sleep(time_to_sleep)  # Sleep to maintain target frame rate
-                        
+                            raise Exception("Failed to read frame during skip.")
+                        continue  # Skip the rest of the loop
+                    
+                    inferenced_frame = inference(initial_frame)
+                    show_images_opencv("INFERENCE", inferenced_frame)
+                    
                     masterloop_end_time = time.time()
                     masterloop = masterloop_end_time - masterloop_start_time 
+                    print("total loop duration : ", masterloop)
                     FPS = 1/(masterloop)
                     write_fps.writerow([FPS])
                     print("FPS per loop : ", FPS)
-                    
-                    if skip:
-                        skip_frame_count = math.ceil(masterloop * frameConfig["FRAMERATE_TARGET"]) # Calculate number of frames to skip based on inference duration
-                        print("total skip frame :", skip_frame_count)
-                        skip = False
-                        
+                         
+                    skip_frame_count = math.ceil(masterloop * frameConfig["FRAMERATE_TARGET"]) # Calculate number of frames to skip based on inference duration
+                    print("total skip frame :", skip_frame_count)
                             
                 except Exception as error:
                     print("Error:", error)
-                    print("Total Object Detection process : ", reset_count)
                     print("Total object detection frame : ", total_objectdetection)
                     break
     video_run_flag = False

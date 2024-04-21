@@ -23,7 +23,7 @@ def parse_args():
 
 def main():
     motion_detected = False 
-    dataset = True
+    dataset = False
     camera = CameraSetup(dataset)
     inference = Inference()
     motiondetection = MotionDetection()
@@ -69,10 +69,10 @@ def main():
     '''
     
     while True: 
-                loop_start_time = time.time()  # Record st art time of the loop
+                loop_start_time = time.time()  # Record start time of the loop
                 try:                            
                     if motion_detected:
-                        initial_frame = camera.compress_resize(initial_frame)
+                        #initial_frame = camera.compress_resize(initial_frame)
                         if inference_enabled:
                             inferenced_frame, total_detection = inference.detect(initial_frame)
                             mqtt_client.publish_detection(total_detection)

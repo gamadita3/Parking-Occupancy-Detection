@@ -1,12 +1,12 @@
 {
-    "CSV_CPU": "./monitor_result/FRIDAY_AFTERNOON_CPU.csv",
-    "CSV_FPS": "./monitor_result/FRIDAY_AFTERNOON.csv",
-    "CSV_STATUS": "./monitor_result/FRIDAY_AFTERNOON_STATUS.csv",
-    "SYSTEM_MONITOR": "./monitor_result/SYSTEM_MONITOR.csv",
-    "MODEL": "./model/parkiritbv9-v8-320.onnx",
-    "LABEL": "./util/label.txt",
-    "VIDEO": "./dataset/MONDAY_MORNING.mp4",
-    "FALSEPOSITIVE": "./falsepositive",
-    "FALSENEGATIVE": "./falsenegative",
-    "MOTIONDETECTION": "./motiondetection"
+    "CSV_CPU": "../monitor_result/FRIDAY_AFTERNOON_CPU.csv",
+    "CSV_FPS": "../monitor_result/FRIDAY_AFTERNOON.csv",
+    "CSV_STATUS": "../monitor_result/FRIDAY_AFTERNOON_STATUS.csv",
+    "SYSTEM_MONITOR": "../monitor_result/SYSTEM_MONITOR.csv",
+    "MODEL": "../model/parkiritbv9-v8-320.onnx",
+    "LABEL": "../util/label.txt",
+    "VIDEO": "../dataset/MONDAY_MORNING.mp4",
+    "FALSEPOSITIVE": "../falsepositive",
+    "FALSENEGATIVE": "../falsenegative",
+    "MOTIONDETECTION": "../motiondetection"
 }

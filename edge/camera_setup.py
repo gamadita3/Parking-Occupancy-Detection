@@ -33,3 +33,9 @@ class CameraSetup:
         frame_show = cv2.resize(frame, (854,480))
         cv2.imshow(window, frame_show)
         cv2.waitKey(1)
+    
+    def compress_resize(self, frame):
+        print("Byte size of previous frame:", frame.nbytes, "bytes")    
+        resized_frame = cv2.resize(frame, (854,480), interpolation=cv2.INTER_AREA)     
+        print("Byte size of resized frame:", resized_frame.nbytes, "bytes")
+        return resized_frame

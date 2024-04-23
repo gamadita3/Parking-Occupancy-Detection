@@ -3,7 +3,6 @@ import traceback
 import threading
 import time
 import csv
-import psutil
 import datetime
 import argparse
 import numpy as np
@@ -23,7 +22,7 @@ def parse_args():
 
 def main():
     motion_detected = False 
-    dataset = False
+    dataset = True
     camera = CameraSetup(dataset)
     inference = Inference()
     motiondetection = MotionDetection()
@@ -35,47 +34,19 @@ def main():
     #system_monitor_thread = threading.Thread(target=systemmonitor.start_monitoring)
     #system_monitor_thread.start()
     
-    '''
-    with open(dirConfig["CSV_FPS"], mode='w', newline='') as file:
-        write_fps = csv.writer(file)
-        write_fps.writerow(['FPS'])
-        with open(dirConfig["CSV_STATUS"], mode='w', newline='') as file:
-            write_status = csv.writer(file)
-            write_status.writerow(['time','empty','occupied','total_detection'])
-            while True: 
-                loop_start_time = time.time()  # Record st art time of the loop
-                try:                            
-                    if motion_detected:
-                        inferenced_frame = inference.detect(initial_frame)
-                        #mqtt_client.publish_frame(inferenced_frame)
-                        camera.show_images_opencv("INFERENCE", inferenced_frame)
-                        motion_detected = False
-                        initial_frame = camera.get_frame                 
-                    else:   
-                        next_frame = camera.get_frame
-                        motiondetection.detect_motion(initial_frame, next_frame)
-                        initial_frame = next_frame
-                        #show_images_opencv("RAW",initial_frame)
-                        
-                    loop_end_time = time.time()
-                    total_loop_time = loop_end_time - loop_start_time 
-                    FPS = 1/(total_loop_time)
-                    write_fps.writerow([FPS])
-                    print("FPS per loop : ", FPS)
-                            
-                except Exception as error:
-                    print("Error:", error)
-                    break
-    '''
-    
     while True: 
                 loop_start_time = time.time()  # Record start time of the loop
                 try:                            
                     if motion_detected:
-                        #initial_frame = camera.compress_resize(initial_frame)
+                        print("\nMotion Detected !")
+                        print("---resize frame---")
+                        initial_frame = camera.compress_resize(initial_frame)
                         if inference_enabled:
+                            print("\n---Inference---")
                             inferenced_frame, total_detection = inference.detect(initial_frame)
-                            mqtt_client.publish_detection(total_detection)
+                            
+                            print("\n---Publishing---")
+                            #mqtt_client.publish_detection(total_detection)
                             mqtt_client.publish_frame(inferenced_frame)
                             camera.show_images_opencv("EDGE_INFERENCE", inferenced_frame)
                         else:
@@ -83,7 +54,8 @@ def main():
                             camera.show_images_opencv("EDGE_RAW", initial_frame)
                         
                         motion_detected = False
-                        initial_frame = camera.get_frame()              
+                        initial_frame = camera.get_frame()
+                        print("##################################################")              
                     else:   
                         next_frame = camera.get_frame()
                         motion_detected = motiondetection.detect_motion(initial_frame, next_frame)
@@ -93,8 +65,7 @@ def main():
                     loop_end_time = time.time()
                     total_loop_time = loop_end_time - loop_start_time 
                     FPS = float('inf') if total_loop_time == 0 else 1 / total_loop_time
-                    #write_fps.writerow([FPS])
-                    #print("FPS per loop : ", FPS)
+                    #print("FPS per loop : ", FPS)               
                             
                 except Exception :
                     print("Error:", print(traceback.format_exc()))

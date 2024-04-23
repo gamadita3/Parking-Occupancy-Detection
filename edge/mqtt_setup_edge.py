@@ -1,6 +1,8 @@
 import json
 import cv2
 import paho.mqtt.client as mqtt
+import time
+import base64
 
 class MQTTSetup:
     def __init__(self):
@@ -8,6 +10,7 @@ class MQTTSetup:
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
+        self.frame_count = 0
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -50,10 +53,29 @@ class MQTTSetup:
         # Convert frame to bytes for publishing
         frame_bytes = frame_encoded.tobytes()
         print("Size of byte array:", len(frame_bytes), "bytes")
+        frame_base64 = base64.b64encode(frame_bytes).decode("utf-8")
+        
+        timestamp = time.time()
+        print("Publish timestamp: ", timestamp)
+        
+        mqtt_message = {
+            "frame": frame_base64,
+            "timestamp": timestamp
+        }
+        
+        # Serialize the data to JSON
+        mqtt_payload = json.dumps(mqtt_message)
         
         #print("encode:", frame_encoded)
-        self.publish(self.mqttConfig["TOPIC_FRAME"], frame_bytes)
+        self.publish(self.mqttConfig["TOPIC_FRAME"], mqtt_payload)
+        self.frame_count += 1
+        print("Total frame sent:", self.frame_count)
 
     def publish_detection(self, total_detections):
         print(f'Publishing total detections')
         self.publish(self.mqttConfig["TOPIC_INFO"], total_detections)
+        
+    def publish_timestamp(self):
+        timestamp = time.time()
+        print("Publish timestamp")
+        self.publish(self.mqttConfig["TOPIC_FRAME"], timestamp)

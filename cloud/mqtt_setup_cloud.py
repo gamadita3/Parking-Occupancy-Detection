@@ -4,6 +4,7 @@ import base64
 import paho.mqtt.client as mqtt
 import numpy as np
 import traceback
+import time
 
 class MQTTSetup:
     def __init__(self):
@@ -39,11 +40,27 @@ class MQTTSetup:
     def on_message(self, client, userdata, message):
         try:
             if message.topic == self.mqttConfig["TOPIC_FRAME"]:
-                payload_size = len(message.payload)  # Get the size of the payload in bytes
-                print("Received payload frame size:", payload_size, "bytes")
+                server_timestamp = time.time()
+                self.payload_size = len(message.payload)  # Get the size of the payload in bytes
+                print("Received payload frame size:", self.payload_size, "bytes")
+                # Parse the JSON message
+                mqtt_message = json.loads(message.payload)
+                
+                # Extract the frame and timestamp
+                frame_base64 = mqtt_message["frame"]
+                client_timestamp = mqtt_message["timestamp"]
+                
+                print("Message sent: ", client_timestamp)
+                print("Message received: ", server_timestamp)
+                self.duration = f"{(server_timestamp - client_timestamp)*1000} ms"
+                print("Transmission duration: ", self.duration)
+ 
+                # Decode the base64-encoded frame to get the original bytes
+                frame_bytes = base64.b64decode(frame_base64) 
+                self.decode_frame_payload(frame_bytes) 
+                
                 self.frame_count += 1
-                print("Received frame:", self.frame_count) 
-                self.decode_frame_payload(message.payload)   
+                print("Frame number:", self.frame_count)  
             elif message.topic == self.mqttConfig["TOPIC_INFO"]: 
                 print("Received info:", message.payload.decode('utf-8'))               
         except Exception:
@@ -65,5 +82,3 @@ class MQTTSetup:
         frame_data = np.frombuffer(payload, np.uint8)
         frame_decode = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)
         self.latest_frame =  frame_decode
-        
-    

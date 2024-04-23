@@ -30,7 +30,7 @@ class MotionDetection:
                 
                 self.motion_detected = True
                 self.md_count += 1
-                print("Motion detected")
+                #print("Motion detected")
                 
                 image_filename_md = f"md_{self.md_count}.jpg"
                 save_path_md = os.path.join(self.dirconfig["MOTIONDETECTION"], image_filename_md)

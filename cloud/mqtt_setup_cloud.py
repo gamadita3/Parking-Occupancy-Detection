@@ -4,15 +4,18 @@ import base64
 import paho.mqtt.client as mqtt
 import numpy as np
 import traceback
+import ntplib
 import time
 
 class MQTTSetup:
     def __init__(self):
         self.mqttConfig = self.load_config('../util/mqtt_config.json')
         self.client = mqtt.Client()
+        self.ntpClient = ntplib.NTPClient()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.latest_frame = None     
+        self.ntp_server = "time.nist.gov"
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -26,7 +29,7 @@ class MQTTSetup:
         self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
-        print("Connecting MQTT to hos : ", self.mqttConfig["HOST_ADDRESS"])
+        print("Connecting MQTT to host: ", self.mqttConfig["HOST_ADDRESS"])
         if rc == 0:
             print("Connected to MQTT host !")
         else:
@@ -47,6 +50,8 @@ class MQTTSetup:
                 client_timestamp = mqtt_message["timestamp"]
                 
                 print(f"Message publish id {self.frame_id} : {client_timestamp}")
+                #response = self.ntpClient.request(self.ntp_server)
+                #server_timestamp = response.tx_time                
                 server_timestamp = time.time()
                 print(f"Message received: {server_timestamp}")
                 self.duration = f"{(server_timestamp - client_timestamp)*1000} ms"

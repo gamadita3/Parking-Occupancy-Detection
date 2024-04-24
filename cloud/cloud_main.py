@@ -15,10 +15,10 @@ def parse_args():
     return parser.parse_args()
 
 # Function to write FPS to CSV
-def write_duration_csv(byte_size, duration):
+def write_duration_csv(frame_id, byte_size, duration):
     with open(dirConfig["CSV_MQTT_DURATION"], mode='a', newline='') as file:  # 'a' for append mode
         writer = csv.writer(file)
-        writer.writerow([byte_size, duration])
+        writer.writerow([frame_id, byte_size, duration])
 
 def main():
     source = SourceSetup()
@@ -29,11 +29,11 @@ def main():
     #system_monitor_thread = threading.Thread(target=systemmonitor.start_monitoring)
     #system_monitor_thread.start()
     
-    while True: 
+    while True:
         try: 
             if mqtt_client.latest_frame is not None:
                 frame = mqtt_client.latest_frame
-                write_duration_csv(mqtt_client.payload_size, mqtt_client.duration)
+                write_duration_csv(mqtt_client.frame_id, mqtt_client.payload_size, mqtt_client.duration)
                 height, width = frame.shape[:2]
                 print(f"Received frame with resolution: {width}x{height}")
                 print("##################################################\n") 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     inference_enabled = parse_args().enable_inference
     with open(dirConfig["CSV_MQTT_DURATION"], mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["BYTE_SIZE","DURATION"])
+        writer.writerow(["FRAME_ID","BYTE_SIZE","DURATION"])
     main()
     
 

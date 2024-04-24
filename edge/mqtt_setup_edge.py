@@ -3,14 +3,17 @@ import cv2
 import paho.mqtt.client as mqtt
 import time
 import base64
+import ntplib
 
 class MQTTSetup:
     def __init__(self):
         self.mqttConfig = self.load_config('../util/mqtt_config.json')
         self.client = mqtt.Client()
+        self.ntpClient = ntplib.NTPClient()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.frame_id = 0
+        self.ntp_server = "time.nist.gov"
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -54,8 +57,11 @@ class MQTTSetup:
         frame_bytes = frame_encoded.tobytes()
         print(f"Size of byte array: {len(frame_bytes)} bytes")
         frame_base64 = base64.b64encode(frame_bytes).decode("utf-8")
-        
+
+        #response = self.ntpClient.request(self.ntp_server)
+        #timestamp = response.tx_time
         timestamp = time.time()
+
         print(f"Publish timestamp: {timestamp}")
         
         self.frame_id += 1

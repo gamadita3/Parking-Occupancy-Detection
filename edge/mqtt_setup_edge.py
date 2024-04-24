@@ -10,7 +10,7 @@ class MQTTSetup:
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        self.frame_count = 0
+        self.frame_id = 0
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -21,7 +21,7 @@ class MQTTSetup:
         self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
-        print("Connecting MQTT to host : ", self.mqttConfig["HOST_ADDRESS"])
+        print(f"Connecting MQTT to host: {self.mqttConfig["HOST_ADDRESS"]}")
         if rc == 0:
             print("Connected to MQTT host !")
         else:
@@ -52,13 +52,16 @@ class MQTTSetup:
         
         # Convert frame to bytes for publishing
         frame_bytes = frame_encoded.tobytes()
-        print("Size of byte array:", len(frame_bytes), "bytes")
+        print(f"Size of byte array: {len(frame_bytes)} bytes")
         frame_base64 = base64.b64encode(frame_bytes).decode("utf-8")
         
         timestamp = time.time()
-        print("Publish timestamp: ", timestamp)
+        print(f"Publish timestamp: {timestamp}")
+        
+        self.frame_id += 1
         
         mqtt_message = {
+            "id": self.frame_id,
             "frame": frame_base64,
             "timestamp": timestamp
         }
@@ -68,8 +71,8 @@ class MQTTSetup:
         
         #print("encode:", frame_encoded)
         self.publish(self.mqttConfig["TOPIC_FRAME"], mqtt_payload)
-        self.frame_count += 1
-        print("Total frame sent:", self.frame_count)
+        
+        print(f"Total frame sent: {self.frame_id}")
 
     def publish_detection(self, total_detections):
         print(f'Publishing total detections')

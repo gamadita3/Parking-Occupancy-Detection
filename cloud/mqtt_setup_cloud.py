@@ -12,9 +12,7 @@ class MQTTSetup:
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        self.latest_frame = None
-        self.frame_count = 0
-        
+        self.latest_frame = None     
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -28,7 +26,7 @@ class MQTTSetup:
         self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
-        print("Connecting MQTT to host : ", self.mqttConfig["HOST_ADDRESS"])
+        print(f"Connecting MQTT to host: {self.mqttConfig["HOST_ADDRESS"]}")
         if rc == 0:
             print("Connected to MQTT host !")
         else:
@@ -40,27 +38,25 @@ class MQTTSetup:
     def on_message(self, client, userdata, message):
         try:
             if message.topic == self.mqttConfig["TOPIC_FRAME"]:
-                server_timestamp = time.time()
                 self.payload_size = len(message.payload)  # Get the size of the payload in bytes
-                print("Received payload frame size:", self.payload_size, "bytes")
-                # Parse the JSON message
                 mqtt_message = json.loads(message.payload)
                 
                 # Extract the frame and timestamp
+                self.frame_id = mqtt_message["id"]
                 frame_base64 = mqtt_message["frame"]
                 client_timestamp = mqtt_message["timestamp"]
                 
-                print("Message sent: ", client_timestamp)
-                print("Message received: ", server_timestamp)
+                print(f"Message publish id {self.frame_id} : {client_timestamp}")
+                server_timestamp = time.time()
+                print(f"Message received: {server_timestamp}")
                 self.duration = f"{(server_timestamp - client_timestamp)*1000} ms"
-                print("Transmission duration: ", self.duration)
+                print(f"Transmission duration for id {self.frame_id} : {self.duration}")
+                print("Received payload size:", self.payload_size, "bytes")
  
                 # Decode the base64-encoded frame to get the original bytes
                 frame_bytes = base64.b64decode(frame_base64) 
                 self.decode_frame_payload(frame_bytes) 
                 
-                self.frame_count += 1
-                print("Frame number:", self.frame_count)  
             elif message.topic == self.mqttConfig["TOPIC_INFO"]: 
                 print("Received info:", message.payload.decode('utf-8'))               
         except Exception:

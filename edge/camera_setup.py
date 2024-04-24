@@ -34,11 +34,10 @@ class CameraSetup:
         cv2.waitKey(1)
     
     def compress_resize(self, frame):
-        height, width = frame.shape[:2]
-        print(f"Previous frame with resolution: {width}x{height}")
-        print("Byte size of previous frame:", frame.nbytes, "bytes")    
+        previous_height, previous_width = frame.shape[:2]    
         resized_frame = cv2.resize(frame, (854,480), interpolation=cv2.INTER_AREA)   
-        height, width = resized_frame.shape[:2]  
-        print(f"Resized frame with resolution: {width}x{height}")
-        print("Byte size of resized frame:", resized_frame.nbytes, "bytes")
+        latest_height, latest_width = resized_frame.shape[:2]  
+        print(f"Resized frame from res {previous_width}x{previous_height} to {latest_width}x{latest_height}")
+        print(f"Byte size of resized from {frame.nbytes} bytes to {resized_frame.nbytes} bytes")
+        print(f"Reduced by {(frame.nbytes - resized_frame.nbytes)} bytes")
         return resized_frame

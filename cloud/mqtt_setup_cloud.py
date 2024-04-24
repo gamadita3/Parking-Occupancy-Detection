@@ -26,7 +26,7 @@ class MQTTSetup:
         self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
-        print(f"Connecting MQTT to host: {self.mqttConfig["HOST_ADDRESS"]}")
+        print("Connecting MQTT to hos : ", self.mqttConfig["HOST_ADDRESS"])
         if rc == 0:
             print("Connected to MQTT host !")
         else:

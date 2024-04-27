@@ -40,14 +40,14 @@ class MQTTSetup:
         print(f"Message published successfully, Message ID: {mid}")
 
     def publish(self, topic, payload):
-        result, mid = self.client.publish(topic, payload, qos=0)
+        result, mid = self.client.publish(topic, payload, qos=self.mqttConfig["QOS"])
         if result == mqtt.MQTT_ERR_SUCCESS:
             print(f"Publish initiated for Message ID: {mid} for topic {topic}")
         else:
             print(f"Failed to initiate publish for topic {topic}, error code: {result}")
         
     def publish_frame(self, frame):
-        encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), 50]
+        encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), self.mqttConfig["JPEG_QUALITY"]]
         height, width = frame.shape[:2]
         print(f"Publishing frame with resolution: {width}x{height}")
         
@@ -55,7 +55,6 @@ class MQTTSetup:
         
         # Convert frame to bytes for publishing
         frame_bytes = frame_encoded.tobytes()
-        print(f"Size of byte array: {len(frame_bytes)} bytes")
         frame_base64 = base64.b64encode(frame_bytes).decode("utf-8")
 
         #response = self.ntpClient.request(self.ntp_server)
@@ -74,7 +73,6 @@ class MQTTSetup:
         
         # Serialize the data to JSON
         mqtt_payload = json.dumps(mqtt_message)
-        
         #print("encode:", frame_encoded)
         self.publish(self.mqttConfig["TOPIC_FRAME"], mqtt_payload)
         

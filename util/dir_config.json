@@ -1,7 +1,7 @@
 {
-    "CSV_CPU": "../monitor_result/FRIDAY_AFTERNOON_CPU.csv",
+    "CSV_MONITOR": "../monitor_result/FRIDAY_AFTERNOON_CPU.csv",
     "CSV_FPS": "../monitor_result/FRIDAY_AFTERNOON.csv",
-    "CSV_STATUS": "../monitor_result/FRIDAY_AFTERNOON_STATUS.csv",
+    "CSV_DETECTION": "../monitor_result/FRIDAY_AFTERNOON_DETECTION.csv",
     "CSV_MQTT_DURATION": "../monitor_result/MQTT_MESSAGE_DURATION.csv",
     "SYSTEM_MONITOR": "../monitor_result/SYSTEM_MONITOR.csv",
     "MODEL": "../model/parkiritbv9-v8-320.onnx",

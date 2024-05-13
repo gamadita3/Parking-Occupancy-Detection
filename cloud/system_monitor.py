@@ -14,7 +14,7 @@ class SystemMonitor:
 
     def start_monitoring(self):
         print("Starting CPU and RAM usage capture")
-        with open(self.dirconfig["SYSTEM_MONITOR"], mode='w', newline='') as file:
+        with open(self.dirconfig["SYSTEM_MONITOR_CLOUD"], mode='w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(['Time', 'CPU Usage (%)', 'RAM Usage (%)', 'RAM Used (MB)'])
             while self.video_run_flag:

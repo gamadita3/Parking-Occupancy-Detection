@@ -4,6 +4,5 @@
     "TOPIC_FRAME": "PSM/frame",
     "TOPIC_INFO": "PSM/info",
     "TOPIC_MODEL": "PSM/model",
-    "QOS": 2,
-    "JPEG_QUALITY": 100
+    "QOS": 2
 }

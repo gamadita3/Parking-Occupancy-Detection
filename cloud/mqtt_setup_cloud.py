@@ -58,9 +58,7 @@ class MQTTSetup:
                 print(f"Transmission duration for id {self.frame_id} : {self.duration}")
                 print("Received payload size:", self.payload_size, "bytes")
  
-                # Decode the base64-encoded frame to get the original bytes
-                frame_bytes = base64.b64decode(frame_base64) 
-                self.decode_frame_payload(frame_bytes) 
+                self.decode_frame_payload(frame_base64) 
                 
             elif message.topic == self.mqttConfig["TOPIC_INFO"]: 
                 print("Received info:", message.payload.decode('utf-8'))               
@@ -79,7 +77,7 @@ class MQTTSetup:
             print(f"Failed to initiate publish, error code: {result}")
             
     def decode_frame_payload(self, payload):
-        #payload_decode = base64.b64decode(payload)
-        frame_data = np.frombuffer(payload, np.uint8)
+        payload_decode = base64.b64decode(payload)
+        frame_data = np.frombuffer(payload_decode, np.uint8)
         frame_decode = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)
         self.latest_frame =  frame_decode

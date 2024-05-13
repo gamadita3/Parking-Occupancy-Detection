@@ -7,6 +7,7 @@ import datetime
 import argparse
 import numpy as np
 from mqtt_setup_edge import MQTTSetup
+from http_client import httpSetup
 from camera_setup import CameraSetup
 from motion_detection import MotionDetection
 from object_detection import Inference
@@ -47,18 +48,21 @@ def main():
                     
                     print("\n---Publishing---")
                     #mqtt_client.publish_detection(total_detection)
-                    mqtt_client.publish_frame(inferenced_frame)
-                    camera.show_images_opencv("EDGE_INFERENCE", inferenced_frame)
+                    #mqtt_client.publish_frame(inferenced_frame)
+                    http_setup.send_frame(inferenced_frame)
+                    #camera.show_images_opencv("EDGE_INFERENCE", inferenced_frame)
                 else:
-                    mqtt_client.publish_frame(initial_frame)
+                    #mqtt_client.publish_frame(initial_frame)
                     camera.show_images_opencv("EDGE_RAW", initial_frame)
                 
                 motion_detected = False
                 initial_frame = camera.get_frame()
                 print("##################################################")              
             else:   
-                next_frame = camera.get_frame()
+                next_frame = camera.get_frame()           
                 motion_detected = motiondetection.detect_motion(initial_frame, next_frame)
+                initial_frame = camera.compress_resize(initial_frame)
+                http_setup.send_frame(initial_frame)
                 initial_frame = next_frame
                 #camera.show_images_opencv("RAW",initial_frame)
                 
@@ -72,8 +76,9 @@ def main():
             break
 
 if __name__ == '__main__':
-    mqtt_client = MQTTSetup()
-    mqtt_client.connect()
+    http_setup = httpSetup()
+    #mqtt_client = MQTTSetup()
+    #mqtt_client.connect()
     inference_enabled = parse_args().enable_inference
     main()
     

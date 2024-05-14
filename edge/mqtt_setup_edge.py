@@ -74,7 +74,6 @@ class MQTTSetup:
         
         # Serialize the data to JSON
         mqtt_payload = json.dumps(mqtt_message)
-        #print("encode:", frame_encoded)
         self.publish(self.mqttConfig["TOPIC_FRAME"], mqtt_payload)
         
         print(f"Total frame sent: {self.frame_id}")

@@ -13,9 +13,22 @@ dirConfig = json.load(open(file="../util/dir_config.json", encoding="utf-8"))
 ###############################-CLOUD-###############################################
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Run with optional inference')
-    parser.add_argument('--enable-inference', action='store_true', help='Enable inference code')
+    parser = argparse.ArgumentParser(description='Run edge device with optional parameters')
+    parser.add_argument('--inference', action='store_true', help='Enable inference code')
+    parser.add_argument('--http', action='store_true', help='Using HTTP protocol')
     return parser.parse_args()
+
+def receive_protocol():
+    if http_protocol :
+        return http_setup.latest_frame
+    else : #default MQTT
+        return mqtt_client.latest_frame
+    
+def empty_frame():
+    if http_protocol :
+        http_setup.latest_frame = None
+    else : #default MQTT
+        mqtt_client.latest_frame = None
 
 # Function to write FPS to CSV
 def write_duration_csv(frame_id, byte_size, duration):
@@ -35,9 +48,8 @@ def main():
     
     while True:
         try: 
-            if http_setup.latest_frame is not None:
-                frame = http_setup.latest_frame
-                #frame = mqtt_client.latest_frame
+            frame = receive_protocol()
+            if frame is not None:
                 #write_duration_csv(mqtt_client.frame_id, mqtt_client.payload_size, mqtt_client.duration)
                 height, width = frame.shape[:2]
                 print(f"Received frame with resolution: {width}x{height}")
@@ -47,21 +59,27 @@ def main():
                     source.show_images_opencv("CLOUD_INFERENCE", inferenced_frame)
                 else:
                     source.show_images_opencv("CLOUD_RAW", frame)
-                http_setup.latest_frame = None
+                #http_setup.latest_frame = None
+                empty_frame()
                 
         except Exception :
             print("Error main:", print(traceback.format_exc()))
             break
 
 if __name__ == '__main__':
-    http_setup = HTTPServer()
-    #http_setup.run()
-    http_setup_thread = threading.Thread(target=http_setup.app.run)
-    http_setup_thread.daemon = True
-    http_setup_thread.start()
-    #mqtt_client = MQTTSetup()
-    #mqtt_client.connect()
-    inference_enabled = parse_args().enable_inference
+    args = parse_args() 
+    http_protocol = args.http
+    if http_protocol :
+        print("Protocol : HTTP")
+        http_setup = HTTPServer()
+        http_setup_thread = threading.Thread(target=http_setup.app.run)
+        http_setup_thread.daemon = True
+        http_setup_thread.start()
+    else : 
+        print("Protocol : MQTT")    #Default MQTT  
+        mqtt_client = MQTTSetup()
+        mqtt_client.connect()
+    inference_enabled = args.inference
     with open(dirConfig["CSV_MQTT_DURATION"], mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["FRAME_ID","BYTE_SIZE","DURATION"])

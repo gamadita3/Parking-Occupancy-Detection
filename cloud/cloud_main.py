@@ -56,7 +56,7 @@ def main():
 if __name__ == '__main__':
     http_setup = HTTPServer()
     #http_setup.run()
-    http_setup_thread = threading.Thread(target=http_setup.run)
+    http_setup_thread = threading.Thread(target=http_setup.app.run)
     http_setup_thread.daemon = True
     http_setup_thread.start()
     #mqtt_client = MQTTSetup()

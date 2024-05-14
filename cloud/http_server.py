@@ -6,10 +6,8 @@ import numpy as np
 import traceback
 
 class HTTPServer:
-    def __init__(self, host='0.0.0.0', port=5000):
+    def __init__(self):
         self.app = Flask(__name__)
-        self.host = host
-        self.port = port
         self.setup_routes()
         self.latest_frame = None
                

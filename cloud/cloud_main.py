@@ -72,7 +72,7 @@ if __name__ == '__main__':
     if http_protocol :
         print("Protocol : HTTP")
         http_setup = HTTPServer()
-        http_setup_thread = threading.Thread(target=http_setup.app.run)
+        http_setup_thread = threading.Thread(target=http_setup.app.run, kwargs={'host': '0.0.0.0', 'port': 5000})
         http_setup_thread.daemon = True
         http_setup_thread.start()
     else : 

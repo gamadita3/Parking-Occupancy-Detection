@@ -3,6 +3,7 @@ import threading
 import argparse
 import csv
 import json
+import time
 from mqtt_setup_cloud import MQTTSetup
 from http_server import HTTPServer
 from source_setup import SourceSetup
@@ -60,6 +61,7 @@ def main():
     frame = None
     frame_id = 1
     frame_check = False
+    start_time = None
     source = SourceSetup()
     inference = Inference()
     systemMonitor = SystemMonitor(True)
@@ -69,8 +71,13 @@ def main():
     #system_monitor_thread = threading.Thread(target=systemMonitor.start_monitoring)
     #system_monitor_thread.start()
     
-    while frame_id < 100:
+    while True:
         try: 
+            if frame_id == 2:
+                start_time = time.time()  # Start the timer when frame_id reaches 2
+            if start_time and (time.time() - start_time) > 600:  # 600 seconds = 10 minutes
+                break  # Stop the loop after 10 minutes
+            
             receive_protocol()
             if frame_check:
                 height, width = frame.shape[:2]

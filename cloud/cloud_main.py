@@ -19,6 +19,8 @@ def parse_args():
     return parser.parse_args()
     
 def empty_frame():
+    global frame
+    frame = None
     if http_protocol :
         http.latest_frame = None
     else : #default MQTT
@@ -28,19 +30,36 @@ def empty_frame():
 def write_duration_csv(frame_id, byte_size, duration):
     with open(dirConfig["CSV_PROTOCOL_DURATION"], mode='a', newline='') as file:  # 'a' for append mode
         writer = csv.writer(file)
-        writer.writerow([frame_id, byte_size, duration])
+        writer.writerow([(frame_id-1), byte_size, duration])
         
 def receive_protocol():
+    global frame
+    global frame_id
+    global frame_check
     if http_protocol :
-        if http.latest_frame is not None:
+        if frame_id != http.frame_id :
             write_duration_csv(http.frame_id, http.payload_size, http.duration)
-        return http.latest_frame
+            frame = http.latest_frame
+            frame_id = http.frame_id
+            frame_check = True
+        else :
+            frame_check = False
     else : #default MQTT
-        if mqtt.latest_frame is not None:
+        if frame_id != mqtt.frame_id :
             write_duration_csv(mqtt.frame_id, mqtt.payload_size, mqtt.duration)
-        return mqtt.latest_frame
+            frame = mqtt.latest_frame
+            frame_id = mqtt.frame_id
+            frame_check = True
+        else :
+            frame_check = False
 
 def main():
+    global frame  
+    global frame_id
+    global frame_check
+    frame = None
+    frame_id = 1
+    frame_check = False
     source = SourceSetup()
     inference = Inference()
     systemMonitor = SystemMonitor(True)
@@ -50,10 +69,10 @@ def main():
     #system_monitor_thread = threading.Thread(target=systemMonitor.start_monitoring)
     #system_monitor_thread.start()
     
-    while True:
+    while frame_id < 100:
         try: 
-            frame = receive_protocol()
-            if frame is not None:
+            receive_protocol()
+            if frame_check:
                 height, width = frame.shape[:2]
                 print(f"Received frame with resolution: {width}x{height}")
                 print("##################################################\n") 
@@ -63,8 +82,7 @@ def main():
                 else:
                     source.show_images_opencv("CLOUD_RAW", frame)
                 #http_setup.latest_frame = None
-                empty_frame()
-                
+                #empty_frame()
         except Exception :
             print("Error main:", print(traceback.format_exc()))
             break

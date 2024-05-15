@@ -43,11 +43,11 @@ class httpSetup:
         response = requests.post(self.server_url, data=http_payload, headers=headers)
         end_timestamp = time.time()
         
-        print(f"Payload size for id {self.frame_id}: {len(http_payload) / 1000} kilobytes")
+        print(f"Payload size for id {self.frame_id - 1}: {len(http_payload) / 1000} kilobytes")
         print(f"Publishing frame with resolution {width}x{height} and jpeg quality {frame_quality}%")
         print(f"HTTP post duration : {(end_timestamp - timestamp) * 1000} ms")
         
         if(response.status_code == 200):           
-            print(f"Frame id {self.frame_id} successfully sent \n")
+            print(f"Frame id {self.frame_id - 1} successfully sent \n")
         else:
-            print(f"Failed to send frame id  {self.frame_id}. Status code: {response.status_code}, Error: {response.text}")
+            print(f"Failed to send frame id  {self.frame_id - 1}. Status code: {response.status_code}, Error: {response.text}")

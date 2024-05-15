@@ -11,6 +11,7 @@ class HTTPServer:
         self.app = Flask(__name__)
         self.setup_routes()
         self.latest_frame = None
+        self.frame_id = 1
                
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -41,8 +42,8 @@ class HTTPServer:
             
             self.duration = f"{(self.server_timestamp - client_timestamp)*1000}"
                
-            print(f"Payload size for id {self.frame_id} : {self.payload_size / 1000} kilobytes")            
-            print(f"Transmission duration for id {self.frame_id} : {self.duration}")            
+            print(f"Payload size for id {self.frame_id - 1} : {self.payload_size / 1000} kilobytes")            
+            print(f"Transmission duration for id {self.frame_id - 1} : {self.duration}")            
             self.decode_frame_payload(frame_base64)
         except Exception:
             print(f"Error on_message:", print(traceback.format_exc()))

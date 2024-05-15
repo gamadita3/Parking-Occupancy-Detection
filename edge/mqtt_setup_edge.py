@@ -65,14 +65,13 @@ class MQTTSetup:
             "frame": frame_base64,
             "timestamp": timestamp
         }
-        
-        # Serialize the data to JSON
+    
         mqtt_payload = json.dumps(mqtt_message)
         self.publish(self.mqttConfig["TOPIC_FRAME"], mqtt_payload)
         
-        print(f"Payload size for id {self.frame_id}: {len(mqtt_payload) / 1000} kilobytes")
+        print(f"Payload size for id {self.frame_id - 1}: {len(mqtt_payload) / 1000} kilobytes")
         print(f"Publishing frame with resolution {width}x{height} and jpeg quality {frame_quality}%")
-        print(f"Total frame sent: {self.frame_id}")
+        print(f"Total frame sent: {self.frame_id - 1}")
 
     def publish_detection(self, total_detections):
         print(f'Publishing total detections')

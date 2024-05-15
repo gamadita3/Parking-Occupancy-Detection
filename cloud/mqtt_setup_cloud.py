@@ -15,7 +15,7 @@ class MQTTSetup:
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.latest_frame = None     
-        self.ntp_server = "time.nist.gov"
+        self.frame_id = 1
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -52,8 +52,8 @@ class MQTTSetup:
                 
                 self.duration = f"{(server_timestamp - client_timestamp)*1000}"
                            
-                print(f"Transmission duration for id {self.frame_id} : {self.duration}")
-                print(f"Payload size for id {self.frame_id} : {self.payload_size / 1000} kilobytes")
+                print(f"Transmission duration for id {self.frame_id - 1} : {self.duration}")
+                print(f"Payload size for id {self.frame_id - 1} : {self.payload_size / 1000} kilobytes")
  
                 self.decode_frame_payload(frame_base64) 
                 

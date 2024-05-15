@@ -26,7 +26,7 @@ def send_protocol(frame, total_detection=None):
     if http_protocol :
         http_setup.send_frame(frame)
     else : #default MQTT
-        mqtt_client.publish_detection(total_detection)
+        #mqtt_client.publish_detection(total_detection)
         mqtt_client.publish_frame(frame) 
 
 def main():

@@ -17,24 +17,28 @@ def parse_args():
     parser.add_argument('--inference', action='store_true', help='Enable inference code')
     parser.add_argument('--http', action='store_true', help='Using HTTP protocol')
     return parser.parse_args()
-
-def receive_protocol():
-    if http_protocol :
-        return http_setup.latest_frame
-    else : #default MQTT
-        return mqtt_client.latest_frame
     
 def empty_frame():
     if http_protocol :
-        http_setup.latest_frame = None
+        http.latest_frame = None
     else : #default MQTT
-        mqtt_client.latest_frame = None
+        mqtt.latest_frame = None
 
 # Function to write FPS to CSV
 def write_duration_csv(frame_id, byte_size, duration):
-    with open(dirConfig["CSV_MQTT_DURATION"], mode='a', newline='') as file:  # 'a' for append mode
+    with open(dirConfig["CSV_PROTOCOL_DURATION"], mode='a', newline='') as file:  # 'a' for append mode
         writer = csv.writer(file)
         writer.writerow([frame_id, byte_size, duration])
+        
+def receive_protocol():
+    if http_protocol :
+        if http.latest_frame is not None:
+            write_duration_csv(http.frame_id, http.payload_size, http.duration)
+        return http.latest_frame
+    else : #default MQTT
+        if mqtt.latest_frame is not None:
+            write_duration_csv(mqtt.frame_id, mqtt.payload_size, mqtt.duration)
+        return mqtt.latest_frame
 
 def main():
     source = SourceSetup()
@@ -50,7 +54,6 @@ def main():
         try: 
             frame = receive_protocol()
             if frame is not None:
-                #write_duration_csv(mqtt_client.frame_id, mqtt_client.payload_size, mqtt_client.duration)
                 height, width = frame.shape[:2]
                 print(f"Received frame with resolution: {width}x{height}")
                 print("##################################################\n") 
@@ -69,18 +72,18 @@ def main():
 if __name__ == '__main__':
     args = parse_args() 
     http_protocol = args.http
+    inference_enabled = args.inference
     if http_protocol :
         print("Protocol : HTTP")
-        http_setup = HTTPServer()
-        http_setup_thread = threading.Thread(target=http_setup.app.run, kwargs={'host': '0.0.0.0', 'port': 5000})
-        http_setup_thread.daemon = True
-        http_setup_thread.start()
+        http = HTTPServer()
+        http_thread = threading.Thread(target=http.app.run, kwargs={'host': '0.0.0.0', 'port': 5000})
+        http_thread.daemon = True
+        http_thread.start()
     else : 
-        print("Protocol : MQTT")    #Default MQTT  
-        mqtt_client = MQTTSetup()
-        mqtt_client.connect()
-    inference_enabled = args.inference
-    with open(dirConfig["CSV_MQTT_DURATION"], mode='w', newline='') as file:
+        print("Protocol : MQTT")    #Default Protocol
+        mqtt = MQTTSetup()
+        mqtt.connect()   
+    with open(dirConfig["CSV_PROTOCOL_DURATION"], mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["FRAME_ID","BYTE_SIZE","DURATION"])
     main()

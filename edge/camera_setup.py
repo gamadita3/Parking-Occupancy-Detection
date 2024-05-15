@@ -38,6 +38,6 @@ class CameraSetup:
         resized_frame = cv2.resize(frame, (854,480), interpolation=cv2.INTER_AREA)   
         latest_height, latest_width = resized_frame.shape[:2]  
         print(f"Resized frame from res {previous_width}x{previous_height} to {latest_width}x{latest_height}")
-        print(f"Byte size of resized from {frame.nbytes} bytes to {resized_frame.nbytes} bytes")
-        print(f"Reduced by {(frame.nbytes - resized_frame.nbytes)} bytes")
+        print(f"Byte size of resized from {frame.nbytes / 10000} kilobytes to {resized_frame.nbytes / 1000} kilobytes")
+        print(f"Reduced by {(frame.nbytes - resized_frame.nbytes) / 1000} kilobytes")
         return resized_frame

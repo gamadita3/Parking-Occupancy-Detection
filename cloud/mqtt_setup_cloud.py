@@ -40,6 +40,7 @@ class MQTTSetup:
 
     def on_message(self, client, userdata, message):
         try:
+            server_timestamp = time.time()
             if message.topic == self.mqttConfig["TOPIC_FRAME"]:
                 self.payload_size = len(message.payload)  # Get the size of the payload in bytes
                 mqtt_message = json.loads(message.payload)
@@ -49,14 +50,10 @@ class MQTTSetup:
                 frame_base64 = mqtt_message["frame"]
                 client_timestamp = mqtt_message["timestamp"]
                 
-                print(f"Message publish id {self.frame_id} : {client_timestamp}")
-                #response = self.ntpClient.request(self.ntp_server)
-                #server_timestamp = response.tx_time                
-                server_timestamp = time.time()
-                print(f"Message received: {server_timestamp}")
-                self.duration = f"{(server_timestamp - client_timestamp)*1000} ms"
+                self.duration = f"{(server_timestamp - client_timestamp)*1000}"
+                           
                 print(f"Transmission duration for id {self.frame_id} : {self.duration}")
-                print("Received payload size:", self.payload_size, "bytes")
+                print(f"Payload size for id {self.frame_id} : {self.payload_size / 1000} kilobytes")
  
                 self.decode_frame_payload(frame_base64) 
                 

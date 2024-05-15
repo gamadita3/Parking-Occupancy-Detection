@@ -4,6 +4,7 @@ from flask import Flask, request, Response, jsonify
 import cv2
 import numpy as np
 import traceback
+import time
 
 class HTTPServer:
     def __init__(self):
@@ -18,21 +19,16 @@ class HTTPServer:
     def setup_routes(self):
         @self.app.route('/video', methods=['POST'])   
         def receive_video():
-            # Parse JSON data from request
-            data = request.get_json()
+            self.server_timestamp = time.time()
+            data = request.data
             
             if data:
-                # Re-encode the parsed JSON to a string
-                json_string = json.dumps(data)
-
-                # Calculate the byte size of the re-encoded JSON
-                byte_size = len(json_string.encode('utf-8'))
+                self.payload_size = len(data)
+                http_message = json.loads(data.decode('utf-8'))
                 
-                print(f"Message size : {byte_size} Byte")
-                self.process_data(data)     
+                self.process_data(http_message)     
                 return jsonify({"message": "Data received", "status": 200})    
             else:
-                # Manually create JSON response for error handling
                 #return Response(json.dumps({"error": "Invalid or no JSON data received."}), status=400, mimetype='application/json')
                 return jsonify({"error": "Invalid or no JSON data received"}), 400
 
@@ -43,7 +39,10 @@ class HTTPServer:
             frame_base64 = data.get('frame')
             client_timestamp = data.get('timestamp')
             
-            print(f"Message http id {self.frame_id} : {client_timestamp}")
+            self.duration = f"{(self.server_timestamp - client_timestamp)*1000}"
+               
+            print(f"Payload size for id {self.frame_id} : {self.payload_size / 1000} kilobytes")            
+            print(f"Transmission duration for id {self.frame_id} : {self.duration}")            
             self.decode_frame_payload(frame_base64)
         except Exception:
             print(f"Error on_message:", print(traceback.format_exc()))

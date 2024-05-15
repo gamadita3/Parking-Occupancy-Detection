@@ -16,9 +16,9 @@ class httpSetup:
             return json.load(file)
         
     def send_frame(self, frame):
-        encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), self.frameConfig["JPEG_QUALITY"]]
+        frame_quality = self.frameConfig["JPEG_QUALITY"]
+        encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), frame_quality]
         height, width = frame.shape[:2]
-        print(f"Publishing frame with resolution: {width}x{height}")
         
         _, frame_encoded = cv2.imencode(".jpg", frame, encode_params)
         
@@ -38,11 +38,13 @@ class httpSetup:
             "timestamp": timestamp
         }
         
-       # Serialize the data to JSON and specify 'application/json' content type
-        headers = {'Content-Type': 'application/json'}
-        response = requests.post(self.server_url, json=http_message, headers=headers)
+        http_payload = json.dumps(http_message)
+        headers = {'Content-Type': 'application/json'}     
+        response = requests.post(self.server_url, data=http_payload, headers=headers)
         end_timestamp = time.time()
         
+        print(f"Payload size for id {self.frame_id}: {len(http_payload) / 1000} kilobytes")
+        print(f"Publishing frame with resolution {width}x{height} and jpeg quality {frame_quality}%")
         print(f"HTTP post duration : {(end_timestamp - timestamp) * 1000} ms")
         
         if(response.status_code == 200):           

@@ -12,6 +12,9 @@ class HTTPServer:
         self.setup_routes()
         self.latest_frame = None
         self.frame_id = 1
+        self.empty_detection = 0
+        self.occupied_detection = 0
+        self.payload_size = 0
                
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -37,6 +40,8 @@ class HTTPServer:
     def process_data(self, data):
         try:
             self.frame_id = data.get('id')
+            self.empty_detection = data.get('empty_detection')
+            self.occupied_detection = data.get('occupied_detection')
             frame_base64 = data.get('frame')
             client_timestamp = data.get('timestamp')
             

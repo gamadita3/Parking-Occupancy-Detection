@@ -47,7 +47,7 @@ class MQTTSetup:
         else:
             print(f"Failed to initiate publish for topic {topic}, error code: {result}")
         
-    def publish_frame(self, frame):
+    def send_frame(self, frame=None, empty_detection=0, occupied_detection=0):
         frame_quality = self.frameConfig["JPEG_QUALITY"]
         encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), frame_quality]
         height, width = frame.shape[:2]
@@ -63,6 +63,8 @@ class MQTTSetup:
         mqtt_message = {
             "id": self.frame_id,
             "frame": frame_base64,
+            "empty_detection": empty_detection,
+            "occupied_detection": occupied_detection,
             "timestamp": timestamp
         }
     

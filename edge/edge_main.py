@@ -22,13 +22,6 @@ def parse_args():
     parser.add_argument('--http', action='store_true', help='Using HTTP protocol')
     return parser.parse_args()
 
-def send_protocol(frame, total_detection=None):
-    if http_protocol :
-        http_setup.send_frame(frame)
-    else : #default MQTT
-        #mqtt_client.publish_detection(total_detection)
-        mqtt_client.publish_frame(frame) 
-
 def main():
     motion_detected = False 
     dataset = True
@@ -52,15 +45,13 @@ def main():
                 initial_frame = camera.compress_resize(initial_frame)
                 if inference_enabled:
                     print("\n---Inference---")
-                    inferenced_frame, total_detection = inference.detect(initial_frame)
-                    
+                    inference.detect(initial_frame)                  
                     print("\n---Publishing---")
-                    send_protocol(inferenced_frame)
+                    protocol.send_frame(inference.frame, inference.total_empty_detection, inference.total_occupied_detection)
                     #camera.show_images_opencv("EDGE_INFERENCE", inferenced_frame)
                 else:
-                    send_protocol(initial_frame)
-                    #camera.show_images_opencv("EDGE_RAW", initial_frame)
-                
+                    protocol.send_frame(frame=initial_frame)
+                    #camera.show_images_opencv("EDGE_RAW", initial_frame)     
                 motion_detected = False
                 initial_frame = camera.get_frame()
                 print("##################################################")              
@@ -68,27 +59,25 @@ def main():
                 next_frame = camera.get_frame()           
                 motion_detected = motiondetection.detect_motion(initial_frame, next_frame)
                 initial_frame = next_frame
-                #camera.show_images_opencv("RAW",initial_frame)
-                
+                #camera.show_images_opencv("RAW",initial_frame)              
             loop_end_time = time.time()
             total_loop_time = loop_end_time - loop_start_time 
             FPS = float('inf') if total_loop_time == 0 else 1 / total_loop_time
-            #print("FPS per loop : ", FPS)               
-                    
+            #print("FPS per loop : ", FPS)                                   
         except Exception :
             print("Error:", print(traceback.format_exc()))
             break
 
 if __name__ == '__main__':
     args = parse_args() 
-    http_protocol = args.http
-    if http_protocol :
+    http_check = args.http
+    if http_check :
         print("Protocol : HTTP")
-        http_setup = httpSetup()
+        protocol = httpSetup()
     else : 
         print("Protocol : MQTT")    #Default MQTT  
-        mqtt_client = MQTTSetup()
-        mqtt_client.connect()
+        protocol = MQTTSetup()
+        protocol.connect()
     inference_enabled = args.inference
     main()
     

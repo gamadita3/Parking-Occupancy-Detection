@@ -15,7 +15,7 @@ class httpSetup:
         with open(path, 'r', encoding='utf-8') as file:
             return json.load(file)
         
-    def send_frame(self, frame):
+    def send_frame(self, frame=None, empty_detection=0, occupied_detection=0):
         frame_quality = self.frameConfig["JPEG_QUALITY"]
         encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), frame_quality]
         height, width = frame.shape[:2]
@@ -25,7 +25,6 @@ class httpSetup:
         # Convert frame to bytes for publishing
         frame_bytes = frame_encoded.tobytes()
         frame_base64 = base64.b64encode(frame_bytes).decode("utf-8")
-        #frame_base64 = None
         
         timestamp = time.time()
         #print(f"Sending timestamp: {timestamp}")
@@ -35,6 +34,8 @@ class httpSetup:
         http_message = {
             "id": self.frame_id,
             "frame": frame_base64,
+            "empty_detection": empty_detection,
+            "occupied_detection": occupied_detection,
             "timestamp": timestamp
         }
         

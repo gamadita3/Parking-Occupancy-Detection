@@ -1,7 +1,6 @@
 import cv2
-import json
 
-class SourceSetup:
+class DisplaySetup:
     def __init__(self):
         pass        
 

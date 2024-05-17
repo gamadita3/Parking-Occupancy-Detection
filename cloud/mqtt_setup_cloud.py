@@ -14,7 +14,9 @@ class MQTTSetup:
         self.ntpClient = ntplib.NTPClient()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        self.latest_frame = None     
+        self.latest_frame = None    
+        self.empty_detection = 0
+        self.occupied_detection = 0 
         self.frame_id = 1
         
     def load_config(self, path):
@@ -47,6 +49,8 @@ class MQTTSetup:
                 
                 # Extract the frame and timestamp
                 self.frame_id = mqtt_message["id"]
+                self.empty_detection = mqtt_message["empty_detection"]
+                self.occupied_detection = mqtt_message["occupied_detection"]
                 frame_base64 = mqtt_message["frame"]
                 client_timestamp = mqtt_message["timestamp"]
                 

@@ -16,6 +16,7 @@ class Inference:
         self.false_negative = 0
         self.total_empty_detection = 0
         self.total_occupied_detection = 0
+        self.frame = None
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -55,7 +56,7 @@ class Inference:
                 break
 
         self.check_detection_anomalies(DP, frame)
-        return frame, total_detection
+        self.frame = frame
 
     def check_detection_anomalies(self, detections, frame):
         if len(detections) > 12:

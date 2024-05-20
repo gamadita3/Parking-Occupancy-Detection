@@ -16,6 +16,7 @@ class Inference:
         self.false_negative = 0
         self.total_empty_detection = 0
         self.total_occupied_detection = 0
+        self.frame = None
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -32,7 +33,8 @@ class Inference:
         detections = self.model(source=frame, task="detect", imgsz=self.frameConfig["IMGSZ"], conf=self.frameConfig["CONFIDENCE"])
         self.total_object_detection += 1
         DP = detections[0].numpy()
-        print("Total detection:", len(DP))
+        total_detection = len(DP)
+        print("Total detection:", total_detection)
         
         for i in range(len(DP)):
             try:
@@ -54,15 +56,13 @@ class Inference:
                 break
 
         self.check_detection_anomalies(DP, frame)
-        return frame
+        self.frame = frame
 
     def check_detection_anomalies(self, detections, frame):
-        '''
         if len(detections) > 12:
             self.handle_false_positive(frame)
         elif len(detections) < 12:
             self.handle_false_negative(frame)
-        '''
 
         print("Empty:", self.total_empty_detection)
         print("Occupied:", self.total_occupied_detection)

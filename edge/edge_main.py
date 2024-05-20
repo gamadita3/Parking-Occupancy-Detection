@@ -1,9 +1,6 @@
 import json
 import traceback
-import threading
 import time
-import csv
-import datetime
 import argparse
 import numpy as np
 from mqtt_setup_edge import MQTTSetup
@@ -38,11 +35,11 @@ def main():
     
     while True: 
         loop_start_time = time.time()  # Record start time of the loop
-        try:                            
+        try:                         
             if motion_detected:
                 print("\nMotion Detected !")
                 print("---resize frame---")
-                initial_frame = camera.compress_resize(initial_frame)
+                #initial_frame = camera.compress_resize(initial_frame)
                 if inference_enabled:
                     print("\n---Inference---")
                     inference.detect(initial_frame)                  
@@ -56,7 +53,7 @@ def main():
                 initial_frame = camera.get_frame()
                 print("##################################################")              
             else:   
-                next_frame = camera.get_frame()           
+                next_frame = camera.get_frame()         
                 motion_detected = motiondetection.detect_motion(initial_frame, next_frame)
                 initial_frame = next_frame
                 #camera.show_images_opencv("RAW",initial_frame)              

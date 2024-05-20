@@ -38,16 +38,30 @@ def main():
             #!!!!!!!!!!!!!!!!!!!!!!!!
 
             source.receive_data()
-            if source.frame_check:
-                height, width = source.frame.shape[:2]
-                print(f"Received frame with resolution: {width}x{height}")
-                print(f"Total Detection {(source.occupied_detection + source.empty_detection)} | Empty {source.empty_detection} | Occupied {source.occupied_detection}")
-                print("##################################################\n") 
-                if inference_enabled:                
-                    inferenced_frame = inference.detect(source.frame)
-                    display.show_images_opencv("CLOUD_INFERENCE", inferenced_frame)
+            try:
+                if source.frame_check and source.frame is not None:
+                    height, width = source.frame.shape[:2]
+                    print(f"Received frame with resolution: {width}x{height}")              
+                    if inference_enabled:
+                        print(f"Perform inference frame id {source.frame_id}")
+                        inference.detect(source.frame)
+                        frame = inference.frame
+                        occupied_detection = inference.total_occupied_detection
+                        empty_detection = inference.total_empty_detection
+                        display.show_images_opencv("CLOUD_INFERENCE", frame)
+                    else :
+                        frame = source.frame
+                        occupied_detection = source.occupied_detection
+                        empty_detection = source.empty_detection
+                        display.show_images_opencv("CLOUD_RAW", frame)
+                            
+                    print(f"Total Detection {(occupied_detection + empty_detection)} | Empty {empty_detection} | Occupied {occupied_detection}")
+                    print("##################################################\n") 
+                    source.frame_check = False
                 else:
-                    display.show_images_opencv("CLOUD_RAW", source.frame)
+                    continue
+            except:
+                continue
         except Exception :
             print("Error main:", print(traceback.format_exc()))
             break

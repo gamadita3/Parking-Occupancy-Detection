@@ -34,8 +34,6 @@ class SourceManager:
             self.occupied_detection = self.protocol.occupied_detection
             self.frame_id = self.protocol.frame_id
             self.frame_check = True
-        else :
-            self.frame_check = False
             
     def write_duration_csv(self):
         with open(self.dirConfig["CSV_PROTOCOL_DURATION"], mode='a', newline='') as file:  # 'a' for append mode

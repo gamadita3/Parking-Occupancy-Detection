@@ -25,9 +25,7 @@ class MQTTSetup:
 
     def connect(self):
         self.client.connect(self.mqttConfig["HOST_ADDRESS"], self.mqttConfig["PORT"], keepalive=60)
-        self.client.subscribe([(self.mqttConfig["TOPIC_FRAME"], 0), 
-                               (self.mqttConfig["TOPIC_INFO"], 0), 
-                               (self.mqttConfig["TOPIC_MODEL"], 0)])
+        self.client.subscribe([(self.mqttConfig["TOPIC_FRAME"], self.mqttConfig["QOS"])])
         self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):

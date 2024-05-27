@@ -59,7 +59,7 @@ def main():
                             
                     height, width = source.frame.shape[:2]
                     print(f"Received frame with resolution: {width}x{height}")
-                    print(f"Total Detection {(source.occupied_detection + source.empty_detection)} | Empty {source.empty_detection} | Occupied {source.occupied_detection}\n")
+                    print(f"Total Detection {(occupied_detection + empty_detection)} | Empty {empty_detection} | Occupied {occupied_detection}\n")
                     
                     # Display detection stats
                     stats_text = f"Total Detections: {occupied_detection + empty_detection} | Empty: {empty_detection} | Occupied: {occupied_detection}"

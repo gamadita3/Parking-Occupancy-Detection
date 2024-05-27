@@ -61,6 +61,7 @@ class MQTTSetup:
         self.frame_id += 1
         
         mqtt_message = {
+            #"topic": self.mqttConfig["TOPIC_FRAME"],
             "id": self.frame_id,
             "frame": frame_base64,
             "empty_detection": empty_detection,

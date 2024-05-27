@@ -1,8 +1,8 @@
 {
-    "HOST_ADDRESS": "167.205.195.59",
+    "HOST_ADDRESS": "localhost",
     "PORT": 1883,
-    "TOPIC_FRAME": "PSM/frame",
-    "TOPIC_INFO": "PSM/info",
+    "LIST_TOPIC_FRAME": "PSM/frame1,PSM/frame2,PSM/frame3",
+    "TOPIC_FRAME": "PSM/frame1",
     "TOPIC_MODEL": "PSM/model",
     "QOS": 2
 }

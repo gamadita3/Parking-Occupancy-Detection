@@ -1,5 +1,5 @@
 {
-    "HOST_ADDRESS": "localhost",
+    "HOST_ADDRESS": "167.205.195.59",
     "PORT": 1883,
     "LIST_TOPIC_FRAME": "PSM/frame1,PSM/frame2,PSM/frame3",
     "TOPIC_FRAME": "PSM/frame1",

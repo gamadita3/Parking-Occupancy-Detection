@@ -11,12 +11,9 @@ class CameraSetup:
             self.capture = cv2.VideoCapture(self.dirconfig["VIDEO"])
         else:
             print("Source : Camera")
-            picam2 = Picamera2()
-            picam2.configure(picam2.create_preview_configuration(main={"size": (1920, 1080)}))
-            picam2.start()
-            
-            source_frame = picam2.capture_array()
-            self.capture = cv2.cvtColor(source_frame, cv2.COLOR_BGR2RGB)
+            self.picam2 = Picamera2()
+            self.picam2.configure(self.picam2.create_preview_configuration(main={"size": (1536, 864)}))
+            self.picam2.start()
             
             #self.capture = cv2.VideoCapture(camera_index, cv2.CAP_V4L)     #USB Camera
             #self.config_camera()
@@ -29,12 +26,19 @@ class CameraSetup:
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.frameconfig["FRAME_WIDTH"])
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frameconfig["FRAME_HEIGHT"])
 
-    def get_frame(self):
-        ret, frame = self.capture.read()
-        if ret:
+    def get_frame(self,dataset):
+        if dataset:
+            ret, frame = self.capture.read()
+            if ret:
+                return frame
+            else :
+                print("Error capturing frame")
+        else:
+            source_frame = self.picam2.capture_array()
+            self.capture = cv2.cvtColor(source_frame, cv2.COLOR_BGR2RGB)
+            frame = self.capture
             return frame
-        else :
-            print("Error capturing frame")
+            
                 
     def show_images_opencv(self, window, frame):
         #frame_show = cv2.resize(frame, (854,480))

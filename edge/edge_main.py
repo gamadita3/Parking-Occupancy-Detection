@@ -20,8 +20,8 @@ def parse_args():
     return parser.parse_args()
 
 def main():
-    motion_detected = False 
-    dataset = True
+    motion_detected = False
+    dataset = False
     camera = CameraSetup(dataset)
     inference = Inference()
     motiondetection = MotionDetection()
@@ -29,7 +29,7 @@ def main():
     
     print("Edge start parking detection !")
     
-    initial_frame = camera.get_frame()
+    initial_frame = camera.get_frame(dataset)
     #system_monitor_thread = threading.Thread(target=systemmonitor.start_monitoring)
     #system_monitor_thread.start()
     
@@ -50,10 +50,10 @@ def main():
                     protocol.send_frame(frame=initial_frame)
                     #camera.show_images_opencv("EDGE_RAW", initial_frame)     
                 motion_detected = False
-                initial_frame = camera.get_frame()
+                initial_frame = camera.get_frame(dataset)
                 print("##################################################")              
             else:   
-                next_frame = camera.get_frame()         
+                next_frame = camera.get_frame(dataset)         
                 motion_detected = motiondetection.detect_motion(initial_frame, next_frame)
                 initial_frame = next_frame
                 #camera.show_images_opencv("RAW",initial_frame)              

@@ -1,5 +1,6 @@
 import cv2
 import json
+from picamera2 import Picamera2
 
 class CameraSetup:
     def __init__(self, dataset, camera_index=0):
@@ -10,8 +11,15 @@ class CameraSetup:
             self.capture = cv2.VideoCapture(self.dirconfig["VIDEO"])
         else:
             print("Source : Camera")
-            self.capture = cv2.VideoCapture(camera_index, cv2.CAP_V4L)
-            self.config_camera()
+            picam2 = Picamera2()
+            picam2.configure(picam2.create_preview_configuration(main={"size": (1920, 1080)}))
+            picam2.start()
+            
+            source_frame = picam2.capture_array()
+            self.capture = cv2.cvtColor(source_frame, cv2.COLOR_BGR2RGB)
+            
+            #self.capture = cv2.VideoCapture(camera_index, cv2.CAP_V4L)     #USB Camera
+            #self.config_camera()
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:

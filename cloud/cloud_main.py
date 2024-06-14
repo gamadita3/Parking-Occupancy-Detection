@@ -31,10 +31,12 @@ def main():
     while True:
         try: 
             #! LIMITER (Disable when deployed)
+            '''
             if source.frame_id == 2:
                 start_time = time.time()  # Start the timer when frame_id reaches 2
             if start_time and (time.time() - start_time) > 60:  # 60 seconds = 1 minutes
                 break  # Stop the loop after 1 minutes
+                '''
             #!!!!!!!!!!!!!!!!!!!!!!!!
 
             source.receive_data()

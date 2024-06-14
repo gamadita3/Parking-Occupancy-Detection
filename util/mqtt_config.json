@@ -1,8 +1,8 @@
 {
     "HOST_ADDRESS": "167.205.195.59",
     "PORT": 1883,
-    "LIST_TOPIC_FRAME": "PSM/frame1,PSM/frame2,PSM/frame3",
-    "TOPIC_FRAME": "PSM/frame1",
-    "TOPIC_MODEL": "PSM/model",
+    "LIST_TOPIC_FRAME": "PSM-edge1,PSM-edge2,PSM-edge3",
+    "TOPIC_FRAME": "PSM-edge1",
+    "TOPIC_MODEL": "PSM-model",
     "QOS": 2
 }

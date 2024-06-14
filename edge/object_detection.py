@@ -3,12 +3,15 @@ from ultralytics import YOLO
 import os
 import json
 import traceback
+import threading
+import time
 
 class Inference:
     def __init__(self):
         self.dirConfig= self.load_config('../util/dir_config.json')
         self.frameConfig= self.load_config('../util/frame_config.json')
-        self.model = YOLO(self.dirConfig["MODEL"])
+        self.model_path = self.dirConfig["MODEL"]
+        self.model = YOLO(self.model_path)
         self.class_list = self.load_labels(self.dirConfig["LABEL"])
         self.detection_colors = [(10, 255, 10), (10, 10, 255)] # green and red colors for bounding boxes
         self.total_object_detection = 0
@@ -17,6 +20,8 @@ class Inference:
         self.total_empty_detection = 0
         self.total_occupied_detection = 0
         self.frame = None
+        self.last_model_update_time = os.path.getmtime(self.model_path)
+        self.model_update_timer()
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -24,7 +29,21 @@ class Inference:
 
     def load_labels(self, label_path):
         with open(label_path, "r") as file:
-            return file.read().split("\n")    
+            return file.read().split("\n")  
+        
+    def model_update_timer(self):
+        threading.Timer(self.frameConfig["UPDATE_DELAY"], self.model_update_timer).start()
+        self.update_model()
+
+    def update_model(self):
+        try:
+            current_time = os.path.getmtime(self.model_path)
+            if current_time != self.last_model_update_time:
+                self.last_model_update_time = current_time
+                new_model = YOLO(self.model_path)  # Attempt to load the new model
+                self.model = new_model  # Assign the new model only if loaded successfully
+        except Exception:
+                print("Error update model:", print(traceback.format_exc()))
 
     def detect(self, frame):
         self.total_empty_detection = 0

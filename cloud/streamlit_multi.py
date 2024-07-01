@@ -64,8 +64,8 @@ def main():
                         stats_placeholders[topic].text(stats_text)
                         
                         height, width = source.data_store[topic]['frame'].shape[:2]
-                        print(f"Received frame with resolution: {width}x{height} for topic {topic}")
-                        print(f"Total Detection {(occupied_detection + empty_detection)} | Empty {empty_detection} | Occupied {occupied_detection}\n")
+                        #print(f"Received frame with resolution: {width}x{height} for topic {topic}")
+                        #print(f"Total Detection {(occupied_detection + empty_detection)} | Empty {empty_detection} | Occupied {occupied_detection}\n")
                     else:
                         continue
             except:

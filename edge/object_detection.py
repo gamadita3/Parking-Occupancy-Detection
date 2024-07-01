@@ -7,7 +7,7 @@ import threading
 import time
 
 class Inference:
-    def __init__(self):
+    def __init__(self, store):
         self.dirConfig= self.load_config('../util/dir_config.json')
         self.frameConfig= self.load_config('../util/frame_config.json')
         self.model_path = self.dirConfig["MODEL"]
@@ -22,6 +22,7 @@ class Inference:
         self.frame = None
         self.last_model_update_time = os.path.getmtime(self.model_path)
         self.model_update_timer()
+        self.store_frame = store
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -88,12 +89,14 @@ class Inference:
 
     def handle_false_positive(self, frame):
         self.false_positive += 1
-        filename = f"fp_{self.false_positive}_empty{self.total_empty_detection}_occ{self.total_occupied_detection}.jpg"
-        save_path = os.path.join(self.dirConfig["FALSEPOSITIVE"], filename)
-        cv2.imwrite(save_path, frame)
+        if self.store_frame :
+            filename = f"fp_{self.false_positive}_empty{self.total_empty_detection}_occ{self.total_occupied_detection}.jpg"
+            save_path = os.path.join(self.dirConfig["FALSEPOSITIVE"], filename)
+            cv2.imwrite(save_path, frame)
 
     def handle_false_negative(self, frame):
         self.false_negative += 1
-        filename = f"fn_{self.false_negative}_empty{self.total_empty_detection}_occ{self.total_occupied_detection}.jpg"
-        save_path = os.path.join(self.dirConfig["FALSENEGATIVE"], filename)
-        cv2.imwrite(save_path, frame)
+        if self.store_frame :
+            filename = f"fn_{self.false_negative}_empty{self.total_empty_detection}_occ{self.total_occupied_detection}.jpg"
+            save_path = os.path.join(self.dirConfig["FALSENEGATIVE"], filename)
+            cv2.imwrite(save_path, frame)

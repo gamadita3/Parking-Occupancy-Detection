@@ -1,6 +1,5 @@
 import cv2
 import json
-from picamera2 import Picamera2
 
 class CameraSetup:
     def __init__(self, dataset, camera_index=0):
@@ -9,14 +8,10 @@ class CameraSetup:
         if dataset:
             print("Source : Dataset")
             self.capture = cv2.VideoCapture(self.dirconfig["VIDEO"])
-        else:
-            print("Source : Camera")
-            self.picam2 = Picamera2()
-            self.picam2.configure(self.picam2.create_preview_configuration(main={"size": (1536, 864)}))
-            self.picam2.start()
-            
-            #self.capture = cv2.VideoCapture(camera_index, cv2.CAP_V4L)     #USB Camera
-            #self.config_camera()
+            print (self.capture)
+        else:            
+            self.capture = cv2.VideoCapture(camera_index, cv2.CAP_V4L)     #USB Camera
+            self.config_camera()
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -26,19 +21,12 @@ class CameraSetup:
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.frameconfig["FRAME_WIDTH"])
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frameconfig["FRAME_HEIGHT"])
 
-    def get_frame(self,dataset):
-        if dataset:
-            ret, frame = self.capture.read()
-            if ret:
-                return frame
-            else :
-                print("Error capturing frame")
-        else:
-            source_frame = self.picam2.capture_array()
-            self.capture = cv2.cvtColor(source_frame, cv2.COLOR_BGR2RGB)
-            frame = self.capture
+    def get_frame(self):
+        ret, frame = self.capture.read()
+        if ret:
             return frame
-            
+        else :
+            print("Error capturing frame")
                 
     def show_images_opencv(self, window, frame):
         #frame_show = cv2.resize(frame, (854,480))

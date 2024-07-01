@@ -7,6 +7,6 @@
     "IMGSZ": 320,
     "CONTOUR_SENSITIVITY": 200,
     "CONFIDENCE": 0.7,
-    "JPEG_QUALITY": 100,
+    "JPEG_QUALITY": 50,
     "UPDATE_DELAY": 30
 }

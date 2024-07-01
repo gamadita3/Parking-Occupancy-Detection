@@ -34,7 +34,7 @@ class MotionDetection:
                 
                 image_filename_md = f"md_{self.md_count}.jpg"
                 save_path_md = os.path.join(self.dirconfig["MOTIONDETECTION"], image_filename_md)
-                cv2.imwrite(save_path_md, contour_frame)
+                #cv2.imwrite(save_path_md, contour_frame)
                 
                 return self.motion_detected
 

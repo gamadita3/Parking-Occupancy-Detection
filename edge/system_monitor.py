@@ -22,14 +22,14 @@ class SystemMonitor:
         print("Starting CPU and RAM usage capture monitor")
         with open(self.dirconfig["SYSTEM_MONITOR_EDGE"], mode='a', newline='') as file:
             writer = csv.writer(file)
-            while self.video_run_flag:
-                cpu_percent = psutil.cpu_percent(interval=0.5)
-                virtual_memory = psutil.virtual_memory()
-                ram_percent = virtual_memory.percent
-                ram_used = virtual_memory.used / (1024 ** 2)
-                current_time = datetime.datetime.now()
-                formatted_time = current_time.strftime("%d/%m/%y %H:%M:%S.%f")[:-3]
-                writer.writerow([formatted_time, cpu_percent, ram_percent, ram_used])
+        while self.video_run_flag:
+            cpu_percent = psutil.cpu_percent(interval=0.5)
+            virtual_memory = psutil.virtual_memory()
+            ram_percent = virtual_memory.percent
+            ram_used = virtual_memory.used / (1024 ** 2)
+            current_time = datetime.datetime.now()
+            formatted_time = current_time.strftime("%d/%m/%y %H:%M:%S.%f")[:-3]
+            writer.writerow([formatted_time, cpu_percent, ram_percent, ram_used])
 
     def stop_monitoring(self):
         self.video_run_flag = False

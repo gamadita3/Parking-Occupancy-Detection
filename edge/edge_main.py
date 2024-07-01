@@ -20,7 +20,8 @@ def parse_args():
     parser.add_argument('--http', action='store_true', help='Using HTTP protocol')
     parser.add_argument('--monitor', action='store_true', help='Monitor CPU and RAM usage')
     parser.add_argument('--dataset', action='store_true', help='Run using dataset')
-    parser.add_argument('--store', action='store_true', help='Store frame')
+    parser.add_argument('--store', action='store_true', help='enable store frame')
+    parser.add_argument('--FPS', action='store_true', help='enable FPS counter')
     return parser.parse_args()
 
 def main():
@@ -62,9 +63,10 @@ def main():
                 initial_frame = next_frame
                 #camera.show_images_opencv("RAW",initial_frame)              
             loop_end_time = time.time()
-            total_loop_time = loop_end_time - loop_start_time 
-            FPS = float('inf') if total_loop_time == 0 else 1 / total_loop_time
-            #print("FPS per loop : ", FPS)                                   
+            if fps_enabled :
+                total_loop_time = loop_end_time - loop_start_time            
+                FPS = float('inf') if total_loop_time == 0 else 1 / total_loop_time
+                print("FPS per loop : ", FPS)                                   
         except Exception :
             print("Error:", print(traceback.format_exc()))
             break
@@ -87,6 +89,8 @@ if __name__ == '__main__':
     print(f"Using Dataset : {dataset_enabled}")
     store_enabled = args.store
     print(f"Store : {store_enabled}")
+    fps_enabled = args.FPS
+    print(f"FPS : {fps_enabled}")
     main()
     
 

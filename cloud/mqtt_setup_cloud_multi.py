@@ -57,8 +57,7 @@ class MQTTSetup:
                 }
                 self.data_store[message.topic] = data
                 self.decode_frame_payload(message.topic, mqtt_message['frame']) 
-                print(f"|{message.topic}| Transmission duration for id {self.data_store[message.topic]['frame_id'] - 1} : {self.data_store[message.topic]['duration']}")
-                print(f"|{message.topic}| Payload size for id {self.data_store[message.topic]['frame_id'] - 1} : {self.data_store[message.topic]['payload_size']} kilobytes")   
+                print(f"|{message.topic}| id: {self.data_store[message.topic]['frame_id'] - 1} | Transmission duration: {self.data_store[message.topic]['duration']} | Payload size: {self.data_store[message.topic]['payload_size']} kilobytes")  
                 #self.printProtocol(message.topic)
                 
             else:

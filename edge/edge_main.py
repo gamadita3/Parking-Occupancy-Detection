@@ -64,7 +64,7 @@ def main():
             loop_end_time = time.time()
             total_loop_time = loop_end_time - loop_start_time 
             FPS = float('inf') if total_loop_time == 0 else 1 / total_loop_time
-            print("FPS per loop : ", FPS)                                   
+            #print("FPS per loop : ", FPS)                                   
         except Exception :
             print("Error:", print(traceback.format_exc()))
             break

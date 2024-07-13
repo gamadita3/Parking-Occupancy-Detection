@@ -1,3 +1,5 @@
 dataset/
 monitor_result/
 __pycache__/
+send_model/
+model/

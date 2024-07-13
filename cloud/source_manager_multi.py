@@ -8,7 +8,7 @@ class SourceManager:
     def __init__(self):
         
         self.data_store = {}
-        self.dirConfig = json.load(open(file="../util/dir_config.json", encoding="utf-8"))
+        self.dirConfig = json.load(open(file="../util/monitor_dir.json", encoding="utf-8"))
         
     def start_protocol(self, http_check):
         if http_check :

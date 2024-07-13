@@ -1,0 +1,6 @@
+{
+    "DATASET": "../dataset/MONDAY_MORNING.mp4",
+    "FRAME_WIDTH": 1280,
+    "FRAME_HEIGHT": 960,
+    "JPEG_QUALITY": 100
+}

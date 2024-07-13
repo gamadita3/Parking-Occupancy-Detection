@@ -3,11 +3,10 @@ import json
 
 class CameraSetup:
     def __init__(self, dataset, camera_index=0):
-        self.frameconfig = self.load_config('../util/frame_config.json')
-        self.dirconfig = self.load_config('../util/dir_config.json')
+        self.sourceConfig = self.load_config('../util/source_config.json')
         if dataset:
             print("Source : Dataset")
-            self.capture = cv2.VideoCapture(self.dirconfig["VIDEO"])
+            self.capture = cv2.VideoCapture(self.sourceConfig["DATASET"])
             print (self.capture)
         else:            
             self.capture = cv2.VideoCapture(camera_index, cv2.CAP_V4L)     #USB Camera
@@ -18,8 +17,8 @@ class CameraSetup:
             return json.load(file)
         
     def config_camera(self):
-        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.frameconfig["FRAME_WIDTH"])
-        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frameconfig["FRAME_HEIGHT"])
+        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.sourceConfig["FRAME_WIDTH"])
+        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.sourceConfig["FRAME_HEIGHT"])
 
     def get_frame(self):
         ret, frame = self.capture.read()

@@ -7,7 +7,7 @@ import cv2
 class httpSetup:
     def __init__(self):
         self.httpConfig = self.load_config('../util/http_config.json')
-        self.frameConfig = self.load_config('../util/frame_config.json')
+        self.detectionConfig = self.load_config('../util/detection_config.json')
         self.server_url = self.httpConfig["URL"]
         self.frame_id = 0
         
@@ -16,7 +16,7 @@ class httpSetup:
             return json.load(file)
         
     def send_frame(self, frame=None, empty_detection=0, occupied_detection=0):
-        frame_quality = self.frameConfig["JPEG_QUALITY"]
+        frame_quality = self.detectionConfig["JPEG_QUALITY"]
         encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), frame_quality]
         height, width = frame.shape[:2]
         

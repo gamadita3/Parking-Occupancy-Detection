@@ -12,7 +12,7 @@ class SourceManager:
         self.protocol = None
         self.empty_detection = 0
         self.occupied_detection = 0
-        self.dirConfig = json.load(open(file="../util/dir_config.json", encoding="utf-8"))
+        self.dirConfig = json.load(open(file="../util/monitor_dir.json", encoding="utf-8"))
         
     def start_protocol(self, http_check):
         if http_check :

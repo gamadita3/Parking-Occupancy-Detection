@@ -6,6 +6,7 @@ import numpy as np
 import traceback
 import ntplib
 import time
+from datetime import datetime
 
 class MQTTSetup:
     def __init__(self):
@@ -25,7 +26,7 @@ class MQTTSetup:
         self.topics = self.mqttConfig["LIST_TOPIC_FRAME"].split(',')
         for topic in self.topics:
             self.client.subscribe([(topic, self.mqttConfig["QOS"])])
-            self.data_store[topic] = {}
+            self.data_store[topic] = {"frame_id": "-"}
         self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
@@ -47,11 +48,13 @@ class MQTTSetup:
             if message.topic in self.topics:                
                 mqtt_message = json.loads(message.payload)             
                 client_timestamp = mqtt_message['timestamp']
+                formatted_time = datetime.fromtimestamp(client_timestamp).strftime("%d-%m-%Y %H:%M:%S")
                 duration = f"{(server_timestamp - client_timestamp) * 1000}"
                 data = {
                     "frame_id": mqtt_message['id'],
                     "empty_detection": mqtt_message['empty_detection'],
                     "occupied_detection": mqtt_message['occupied_detection'],
+                    "time" : formatted_time,
                     "duration": duration,
                     "payload_size": len(message.payload) / 1000  # Kilobytes
                 }

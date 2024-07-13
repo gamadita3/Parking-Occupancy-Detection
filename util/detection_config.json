@@ -1,0 +1,14 @@
+{
+    "MODEL": "../model/yolo.onnx",
+    "LABEL": "../util/label.txt",
+    "FALSEPOSITIVE": "../falsepositive",
+    "FALSENEGATIVE": "../falsenegative",
+    "FRAME_WIDTH": 1280,
+    "FRAME_HEIGHT": 960,
+    "FRAMERATE_TARGET": 30,
+    "INFERENCE_DURATION": 10,
+    "IMGSZ": 320,
+    "CONFIDENCE": 0.7,
+    "JPEG_QUALITY": 50,
+    "UPDATE_DELAY": 30
+}

@@ -8,9 +8,6 @@ from display_setup import DisplaySetup
 from object_detection import Inference
 from system_monitor import SystemMonitor
 
-# Load configuration
-dirConfig = json.load(open("../util/dir_config.json", encoding="utf-8"))
-
 def main():
     # Streamlit sidebar options
     st.sidebar.title("Control Panel")

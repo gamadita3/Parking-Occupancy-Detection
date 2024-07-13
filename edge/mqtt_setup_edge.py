@@ -8,7 +8,7 @@ import ntplib
 class MQTTSetup:
     def __init__(self):
         self.mqttConfig = self.load_config('../util/mqtt_config.json')
-        self.frameConfig = self.load_config('../util/frame_config.json')
+        self.detectionConfig = self.load_config('../util/detection_config.json')
         self.client = mqtt.Client()
         self.ntpClient = ntplib.NTPClient()
         self.client.on_connect = self.on_connect
@@ -48,7 +48,7 @@ class MQTTSetup:
             print(f"Failed to initiate publish for topic {topic}, error code: {result}")
         
     def send_frame(self, frame=None, empty_detection=0, occupied_detection=0):
-        frame_quality = self.frameConfig["JPEG_QUALITY"]
+        frame_quality = self.detectionConfig["JPEG_QUALITY"]
         encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), frame_quality]
         height, width = frame.shape[:2]
         _, frame_encoded = cv2.imencode(".jpg", frame, encode_params)

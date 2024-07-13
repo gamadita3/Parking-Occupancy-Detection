@@ -6,10 +6,9 @@ import traceback
 
 class Inference:
     def __init__(self):
-        self.dirConfig= self.load_config('../util/dir_config.json')
-        self.frameConfig= self.load_config('../util/frame_config.json')
-        self.model = YOLO(self.dirConfig["MODEL"])
-        self.class_list = self.load_labels(self.dirConfig["LABEL"])
+        self.detectionConfig= self.load_config('../util/detection_config.json')
+        self.model = YOLO(self.detectionConfig["MODEL"])
+        self.class_list = self.load_labels(self.detectionConfig["LABEL"])
         self.detection_colors = [(10, 255, 10), (10, 10, 255)] # green and red colors for bounding boxes
         self.total_object_detection = 0
         self.false_positive = 0
@@ -30,7 +29,7 @@ class Inference:
         self.total_empty_detection = 0
         self.total_occupied_detection = 0
         
-        detections = self.model(source=frame, task="detect", imgsz=self.frameConfig["IMGSZ"], conf=self.frameConfig["CONFIDENCE"])
+        detections = self.model(source=frame, task="detect", imgsz=self.detectionConfig["IMGSZ"], conf=self.detectionConfig["CONFIDENCE"])
         self.total_object_detection += 1
         DP = detections[0].numpy()
         total_detection = len(DP)
@@ -70,11 +69,11 @@ class Inference:
     def handle_false_positive(self, frame):
         self.false_positive += 1
         filename = f"fp_{self.false_positive}_empty{self.total_empty_detection}_occ{self.total_occupied_detection}.jpg"
-        save_path = os.path.join(self.dirConfig["FALSEPOSITIVE"], filename)
+        save_path = os.path.join(self.detectionConfig["FALSEPOSITIVE"], filename)
         cv2.imwrite(save_path, frame)
 
     def handle_false_negative(self, frame):
         self.false_negative += 1
         filename = f"fn_{self.false_negative}_empty{self.total_empty_detection}_occ{self.total_occupied_detection}.jpg"
-        save_path = os.path.join(self.dirConfig["FALSENEGATIVE"], filename)
+        save_path = os.path.join(self.detectionConfig["FALSENEGATIVE"], filename)
         cv2.imwrite(save_path, frame)

@@ -4,11 +4,5 @@
     "CSV_DETECTION": "../monitor_result/DETECTION_MONDAY_MORNING.csv",
     "CSV_PROTOCOL_DURATION": "../monitor_result/MQTT_MESSAGE_DURATION.csv",
     "SYSTEM_MONITOR_CLOUD": "../monitor_result/SYSTEM_MONITOR_CLOUD.csv",
-    "SYSTEM_MONITOR_EDGE": "../monitor_result/SYSTEM_MONITOR_EDGE.csv",
-    "MODEL": "../model/yolo.onnx",
-    "LABEL": "../util/label.txt",
-    "VIDEO": "../dataset/MONDAY_MORNING.mp4",
-    "FALSEPOSITIVE": "../falsepositive",
-    "FALSENEGATIVE": "../falsenegative",
-    "MOTIONDETECTION": "../motiondetection"
+    "SYSTEM_MONITOR_EDGE": "../monitor_result/SYSTEM_MONITOR_EDGE.csv"
 }

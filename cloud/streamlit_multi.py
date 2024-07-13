@@ -3,21 +3,17 @@ import traceback
 import json
 import time
 import cv2
+import numpy
 from source_manager_multi import SourceManager
 from display_setup import DisplaySetup
 from object_detection import Inference
 from system_monitor import SystemMonitor
-
-# Load configuration
-dirConfig = json.load(open("../util/dir_config.json", encoding="utf-8"))
 
 def main():
     # Streamlit sidebar options
     st.sidebar.title("Control Panel")
     inference_enabled = st.sidebar.checkbox("Enable Inference", value=False)
     http_check = st.sidebar.checkbox("Use HTTP Protocol", value=False)
-    run_button = st.sidebar.button("Run")
-    stop_button = st.sidebar.button("Stop")
 
     # Setup objects
     display = DisplaySetup()
@@ -29,25 +25,23 @@ def main():
     # Placeholder for video frame and detection counts
     frame_placeholders = {}
     stats_placeholders = {}
-    
-    if run_button:
-        st.session_state.run = True
-
-    if stop_button:
-        st.session_state.run = False
-
-    start_time = None
 
     while True:
         try:
             source.receive_data()
             try:
                 for topic in source.topics:
-                    if source.data_store[topic]['frame'] is not None:                  
-                        if topic not in frame_placeholders:
+                    if topic not in frame_placeholders:
+                            print(f"Set placeholders for topic {topic}")
                             frame_placeholders[topic] = st.empty()
                             stats_placeholders[topic] = st.empty()
-                            
+                            blank_frame = numpy.zeros((720, 1280, 3), dtype=numpy.uint8)
+                            blank_text = f"<div style='text-align: center'>Topic {topic} | No data available</div>"
+                            frame_placeholders[topic].image(blank_frame, channels="BGR", caption=f"{topic} | No image")
+                            stats_placeholders[topic].markdown(blank_text, unsafe_allow_html=True)
+                            st.markdown('<div style="margin-bottom: 30px;"></div>', unsafe_allow_html=True)
+                               
+                    if source.data_store[topic]['frame_id'] != "-":                  
                         if inference_enabled:
                             print(f"Perform inference topic {topic} frame id {source.data_store[topic]['frame_id']}")
                             inference.detect(source.data_store[topic]['frame'])
@@ -59,16 +53,17 @@ def main():
                             occupied_detection = source.data_store[topic]['occupied_detection']
                             empty_detection = source.data_store[topic]['empty_detection']
                             
-                        frame_placeholders[topic].image(frame, channels="BGR", caption="Live Video Stream")
-                        stats_text = f"Topic {topic} | total Detections: {occupied_detection + empty_detection} | Empty: {empty_detection} | Occupied: {occupied_detection}"
-                        stats_placeholders[topic].text(stats_text)
+                        frame_placeholders[topic].image(frame, channels="BGR", caption=f"{topic} | {source.data_store[topic]['time']}")
+                        stats_text = f"<div style='text-align: center'>Topic {topic} | Total Detections: {occupied_detection + empty_detection} | Empty: {empty_detection} | Occupied: {occupied_detection}</div>"
+                        stats_placeholders[topic].markdown(stats_text, unsafe_allow_html=True)
+                        st.markdown('<div style="margin-bottom: 50px;"></div>', unsafe_allow_html=True)
                         
                         height, width = source.data_store[topic]['frame'].shape[:2]
                         #print(f"Received frame with resolution: {width}x{height} for topic {topic}")
                         #print(f"Total Detection {(occupied_detection + empty_detection)} | Empty {empty_detection} | Occupied {occupied_detection}\n")
                     else:
                         continue
-            except:
+            except Exception as e:
                 continue
         except Exception as e:
             st.error(f"Error: {traceback.format_exc()}")

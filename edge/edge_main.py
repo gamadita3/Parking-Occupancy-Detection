@@ -10,7 +10,7 @@ from camera_setup import CameraSetup
 from motion_detection import MotionDetection
 from object_detection import Inference
 from system_monitor import SystemMonitor
-dirConfig = json.load(open(file="../util/dir_config.json", encoding="utf-8"))
+samplingConfig = json.load(open(file="../util/sampling_config.json", encoding="utf-8"))
 
 ###############################-EDGE-###############################################
 
@@ -30,6 +30,7 @@ def main():
     inference = Inference(store_enabled)
     motiondetection = MotionDetection()
     systemmonitor = SystemMonitor(monitor_enabled)
+    last_sent_time = time.time() - 300  
     
     initial_frame = camera.get_frame()
     if monitor_enabled :   
@@ -46,12 +47,18 @@ def main():
                 print("---resize frame---")
                 #initial_frame = camera.compress_resize(initial_frame)
                 if inference_enabled:
+                    if time.time() - last_sent_time >= samplingConfig["SAMPLE_INTERVAL"] :
+                        protocol.send_sample(frame=initial_frame)
+                        last_sent_time = time.time()
                     print("\n---Inference---")
                     inference.detect(initial_frame)                  
                     print("\n---Publishing---")
                     protocol.send_frame(inference.frame, inference.total_empty_detection, inference.total_occupied_detection)
                     #camera.show_images_opencv("EDGE_INFERENCE", inferenced_frame)
                 else:
+                    if time.time() - last_sent_time >= samplingConfig["SAMPLE_INTERVAL"] :
+                        protocol.send_sample(frame=initial_frame)
+                        last_sent_time = time.time()
                     protocol.send_frame(frame=initial_frame)
                     #camera.show_images_opencv("EDGE_RAW", initial_frame)     
                 motion_detected = False

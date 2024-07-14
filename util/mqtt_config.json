@@ -4,5 +4,7 @@
     "LIST_TOPIC_FRAME": "PSM-edge1,PSM-edge2,PSM-edge3",
     "TOPIC_FRAME": "PSM-edge1",
     "TOPIC_MODEL": "PSM-model",
+    "LIST_TOPIC_SAMPLE": "PSM-edge1_sample,PSM-edge2_sample,PSM-edge2_sample",
+    "TOPIC_SAMPLE": "PSM-edge1_sample",
     "QOS": 2
 }

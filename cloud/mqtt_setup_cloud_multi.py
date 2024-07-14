@@ -6,7 +6,7 @@ import numpy as np
 import traceback
 import ntplib
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class MQTTSetup:
     def __init__(self):
@@ -48,7 +48,7 @@ class MQTTSetup:
             if message.topic in self.topics:                
                 mqtt_message = json.loads(message.payload)             
                 client_timestamp = mqtt_message['timestamp']
-                formatted_time = datetime.fromtimestamp(client_timestamp).strftime("%d-%m-%Y %H:%M:%S")
+                formatted_time = (datetime.fromtimestamp(client_timestamp)+ timedelta(hours=7)).strftime("%d-%m-%Y %H:%M:%S")
                 duration = f"{(server_timestamp - client_timestamp) * 1000}"
                 data = {
                     "frame_id": mqtt_message['id'],

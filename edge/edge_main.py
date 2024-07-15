@@ -2,7 +2,6 @@ import json
 import traceback
 import time
 import argparse
-import numpy as np
 import threading
 from mqtt_setup_edge import MQTTSetup
 from http_client import httpSetup
@@ -10,7 +9,7 @@ from camera_setup import CameraSetup
 from motion_detection import MotionDetection
 from object_detection import Inference
 from system_monitor import SystemMonitor
-samplingConfig = json.load(open(file="../util/sampling_config.json", encoding="utf-8"))
+from sampling import Sampling
 
 ###############################-EDGE-###############################################
 
@@ -30,7 +29,7 @@ def main():
     inference = Inference(store_enabled)
     motiondetection = MotionDetection()
     systemmonitor = SystemMonitor(monitor_enabled)
-    last_sent_time = time.time() - 300  
+    sampling = Sampling()
     
     initial_frame = camera.get_frame()
     if monitor_enabled :   
@@ -41,24 +40,20 @@ def main():
     
     while True: 
         loop_start_time = time.time()  # Record start time of the loop
-        try:                         
+        try:   
+            sampling.save_sample(initial_frame, loop_start_time)                           
             if motion_detected:
                 print("\nMotion Detected !")
-                print("---resize frame---")
-                #initial_frame = camera.compress_resize(initial_frame)
                 if inference_enabled:
-                    if time.time() - last_sent_time >= samplingConfig["SAMPLE_INTERVAL"] :
-                        protocol.send_sample(frame=initial_frame)
-                        last_sent_time = time.time()
                     print("\n---Inference---")
-                    inference.detect(initial_frame)                  
+                    inference.detect(initial_frame)   
+                    inferenced_frame = inference.frame    
+                    print("\n---resize frame---")
+                    inferenced_frame = camera.compress_resize(inferenced_frame)             
                     print("\n---Publishing---")
-                    protocol.send_frame(inference.frame, inference.total_empty_detection, inference.total_occupied_detection)
+                    protocol.send_frame(inferenced_frame, inference.total_empty_detection, inference.total_occupied_detection)
                     #camera.show_images_opencv("EDGE_INFERENCE", inferenced_frame)
                 else:
-                    if time.time() - last_sent_time >= samplingConfig["SAMPLE_INTERVAL"] :
-                        protocol.send_sample(frame=initial_frame)
-                        last_sent_time = time.time()
                     protocol.send_frame(frame=initial_frame)
                     #camera.show_images_opencv("EDGE_RAW", initial_frame)     
                 motion_detected = False

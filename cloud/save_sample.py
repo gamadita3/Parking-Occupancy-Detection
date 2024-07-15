@@ -9,7 +9,8 @@ mqttConfig = json.load(open(file="../util/mqtt_config.json", encoding="utf-8"))
 samplingConfig = json.load(open(file="../util/sampling_config.json", encoding="utf-8"))
 
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code " + str(rc))
+    host = mqttConfig["HOST_ADDRESS"]
+    print(f"Connected to {host}")
     topics = mqttConfig["LIST_TOPIC_SAMPLE"].split(',')
     for topic in topics:
         client.subscribe([(topic, mqttConfig["QOS"])])
@@ -29,7 +30,8 @@ def on_message(client, userdata, msg):
 
         # Construct the filename and save path
         filename = f"{msg.topic}_{timestamp}.jpg"
-        file_path = os.path.join(samplingConfig["SAMPLE_LOCATION"], filename)
+        sample_location = samplingConfig["SAMPLE_LOCATION"]
+        file_path = os.path.join((f"{sample_location}_{msg.topic}"), filename)
 
         # Save the frame as a JPEG file
         cv2.imwrite(file_path, frame_decode)

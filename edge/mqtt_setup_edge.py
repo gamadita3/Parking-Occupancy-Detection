@@ -92,7 +92,7 @@ class MQTTSetup:
         mqtt_payload = json.dumps(mqtt_message)
         self.publish(self.mqttConfig["TOPIC_SAMPLE"], mqtt_payload)
         
-        print(f"Publishing frame sample with resolution {width}x{height}")
+        print(f"!!! Publishing frame sample with resolution {width}x{height} !!!")
         
     def publish_timestamp(self):
         timestamp = time.time()

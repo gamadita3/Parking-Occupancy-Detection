@@ -1,4 +1,6 @@
 {
     "SAMPLE_INTERVAL": 300,
+    "SAMPLE_STOP_HOUR": 20,
+    "SAMPLE_START_HOUR": 5,
     "SAMPLE_LOCATION": "../sample"
 } 

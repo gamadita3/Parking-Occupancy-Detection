@@ -2,6 +2,7 @@ import json
 import traceback
 import time
 import argparse
+import datetime
 import threading
 from mqtt_setup_edge import MQTTSetup
 from http_client import httpSetup
@@ -9,7 +10,7 @@ from camera_setup import CameraSetup
 from motion_detection import MotionDetection
 from object_detection import Inference
 from system_monitor import SystemMonitor
-from sampling import Sampling
+samplingConfig = json.load(open(file="../util/sampling_config.json", encoding="utf-8"))
 
 ###############################-EDGE-###############################################
 
@@ -29,37 +30,49 @@ def main():
     inference = Inference(store_enabled)
     motiondetection = MotionDetection()
     systemmonitor = SystemMonitor(monitor_enabled)
-    sampling = Sampling()
+    last_sent_time = time.time()
     
     initial_frame = camera.get_frame()
     if monitor_enabled :   
         system_monitor_thread = threading.Thread(target=systemmonitor.start_monitoring)
         system_monitor_thread.start()
     
-    print("\nEdge start parking detection !")
+    print(f"\nEdge start parking detection ! at {datetime.datetime.now().time()}")
     
     while True: 
         loop_start_time = time.time()  # Record start time of the loop
-        try:   
-            sampling.save_sample(initial_frame, loop_start_time)                           
+        current_time = datetime.datetime.now().time()
+        try:                         
             if motion_detected:
                 print("\nMotion Detected !")
+                print("---resize frame---")
+                #initial_frame = camera.compress_resize(initial_frame)
                 if inference_enabled:
+                    if datetime.time(samplingConfig["SAMPLE_START_HOUR"], 0) <= current_time <= datetime.time(samplingConfig["SAMPLE_STOP_HOUR"], 0):
+                        if time.time() - last_sent_time >= samplingConfig["SAMPLE_INTERVAL"] :
+                            protocol.send_sample(frame=initial_frame)
+                            last_sent_time = time.time()
                     print("\n---Inference---")
-                    inference.detect(initial_frame)   
-                    inferenced_frame = inference.frame    
-                    print("\n---resize frame---")
-                    inferenced_frame = camera.compress_resize(inferenced_frame)             
+                    inference.detect(initial_frame)                  
                     print("\n---Publishing---")
-                    protocol.send_frame(inferenced_frame, inference.total_empty_detection, inference.total_occupied_detection)
+                    protocol.send_frame(inference.frame, inference.total_empty_detection, inference.total_occupied_detection)
                     #camera.show_images_opencv("EDGE_INFERENCE", inferenced_frame)
                 else:
+                    if datetime.time(samplingConfig["SAMPLE_START_HOUR"], 0) <= current_time <= datetime.time(samplingConfig["SAMPLE_STOP_HOUR"], 0):
+                        if time.time() - last_sent_time >= samplingConfig["SAMPLE_INTERVAL"] :
+                            protocol.send_sample(frame=initial_frame)
+                            last_sent_time = time.time()
                     protocol.send_frame(frame=initial_frame)
                     #camera.show_images_opencv("EDGE_RAW", initial_frame)     
                 motion_detected = False
                 initial_frame = camera.get_frame()
                 print("##################################################")              
             else:   
+                if datetime.time(samplingConfig["SAMPLE_START_HOUR"], 0) <= current_time <= datetime.time(samplingConfig["SAMPLE_STOP_HOUR"], 0):
+                    if time.time() - last_sent_time >= samplingConfig["SAMPLE_INTERVAL"] :
+                            protocol.send_sample(frame=initial_frame)
+                            last_sent_time = time.time()
+                                              
                 next_frame = camera.get_frame()         
                 motion_detected = motiondetection.detect_motion(initial_frame, next_frame)
                 initial_frame = next_frame

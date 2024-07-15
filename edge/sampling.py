@@ -7,7 +7,7 @@ class Sampling:
     def __init__(self):
         self.samplingConfig = self.load_config('../util/sampling_config.json')
         self.protocol = MQTTSetup()
-        self.last_sent_time = time.time() - 300  
+        self.last_sent_time = time.time() 
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:

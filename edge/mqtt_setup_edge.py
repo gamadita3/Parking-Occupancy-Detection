@@ -7,7 +7,6 @@ import base64
 class MQTTSetup:
     def __init__(self):
         self.mqttConfig = self.load_config('../util/mqtt_config.json')
-        self.detectionConfig = self.load_config('../util/detection_config.json')
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
@@ -46,7 +45,7 @@ class MQTTSetup:
             print(f"Failed to initiate publish for topic {topic}, error code: {result}")
         
     def send_frame(self, frame=None, empty_detection=0, occupied_detection=0):
-        frame_quality = self.detectionConfig["JPEG_QUALITY"]
+        frame_quality = self.mqttConfig["JPEG_QUALITY"]
         encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), frame_quality]
         height, width = frame.shape[:2]
         _, frame_encoded = cv2.imencode(".jpg", frame, encode_params)

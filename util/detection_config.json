@@ -9,6 +9,6 @@
     "INFERENCE_DURATION": 10,
     "IMGSZ": 320,
     "CONFIDENCE": 0.7,
-    "JPEG_QUALITY": 50,
-    "UPDATE_DELAY": 30
+    "UPDATE_DELAY": 30,
+    "WRITE_DETECTION": "../monitor_result/DETECTION_TEST.csv"
 }

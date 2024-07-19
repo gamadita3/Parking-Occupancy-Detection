@@ -4,7 +4,8 @@ import os
 import json
 import traceback
 import threading
-import time
+import datetime
+import csv
 
 class Inference:
     def __init__(self, store):
@@ -22,6 +23,7 @@ class Inference:
         self.last_model_update_time = os.path.getmtime(self.model_path)
         self.model_update_timer()
         self.store_frame = store
+        self.initialize_write_detection()
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -76,6 +78,7 @@ class Inference:
 
         self.check_detection_anomalies(DP, frame)
         self.frame = frame
+        self.write_detection() #MONITOR OBJECT DETECTION
 
     def check_detection_anomalies(self, detections, frame):
         if len(detections) > 12:
@@ -99,3 +102,15 @@ class Inference:
             filename = f"fn_{self.false_negative}_empty{self.total_empty_detection}_occ{self.total_occupied_detection}.jpg"
             save_path = os.path.join(self.detectionConfig["FALSENEGATIVE"], filename)
             cv2.imwrite(save_path, frame)
+            
+    def write_detection(self):
+        with open(self.detectionConfig["WRITE_DETECTION"], mode='a', newline='') as detectionFile:  # 'a' for append mode
+            writer = csv.writer(detectionFile)
+            timestamp = datetime.datetime.now().time()
+            totaldetected = self.total_empty_detection + self.total_occupied_detection
+            writer.writerow([self.total_object_detection, timestamp, self.total_empty_detection, self.total_occupied_detection, totaldetected])
+    
+    def initialize_write_detection(self):
+        with open(self.detectionConfig["WRITE_DETECTION"], mode='w', newline='') as detectionFile:
+            detectionWriter = csv.writer(detectionFile)
+            detectionWriter.writerow(['no','time','empty','occupied','total_detection'])

@@ -6,5 +6,6 @@
     "TOPIC_MODEL": "PSM-model",
     "LIST_TOPIC_SAMPLE": "PSM-edge1-sample,PSM-edge2-sample,PSM-edge2-sample",
     "TOPIC_SAMPLE": "PSM-edge1-sample",
-    "QOS": 2
+    "QOS": 2,
+    "JPEG_QUALITY": 50
 }

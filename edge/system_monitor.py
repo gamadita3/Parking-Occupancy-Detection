@@ -5,7 +5,7 @@ import json
 
 class SystemMonitor:
     def __init__(self, flag):
-        self.dirconfig = self.load_config('../util/dir_config.json')
+        self.dirconfig = self.load_config('../util/monitor_dir.json')
         self.video_run_flag = flag
         if self.video_run_flag :
             print("Initialize monitor CPU and RAM usage")

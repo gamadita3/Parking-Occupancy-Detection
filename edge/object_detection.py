@@ -78,7 +78,7 @@ class Inference:
 
         self.check_detection_anomalies(DP, frame)
         self.frame = frame
-        self.write_detection() #MONITOR OBJECT DETECTION
+        #self.write_detection() #MONITOR OBJECT DETECTION
 
     def check_detection_anomalies(self, detections, frame):
         if len(detections) > 12:

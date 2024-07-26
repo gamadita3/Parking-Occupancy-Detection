@@ -45,7 +45,7 @@ def main():
         try:                         
             if motion_detected:
                 print("\nMotion Detected !")
-                print("---resize frame---")
+                #print("---resize frame---")
                 #initial_frame = camera.compress_resize(initial_frame)
                 if inference_enabled:
                     if datetime.time(samplingConfig["SAMPLE_START_HOUR"], 0) <= current_time <= datetime.time(samplingConfig["SAMPLE_STOP_HOUR"], 0):

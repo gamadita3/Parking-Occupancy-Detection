@@ -12,6 +12,10 @@ class SystemMonitor:
             with open(self.dirconfig["SYSTEM_MONITOR_EDGE"], mode='w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(['Time', 'CPU Usage (%)', 'RAM Usage (%)', 'RAM Used (MB)'])
+            with open(self.dirconfig["FPS_MONITOR"], mode='w', newline='') as fpsFile:
+                writer = csv.writer(fpsFile)
+                writer.writerow(['FPS'])
+                
         
         
     def load_config(self, path):
@@ -30,6 +34,11 @@ class SystemMonitor:
                 formatted_time = current_time.strftime("%d/%m/%y %H:%M:%S.%f")[:-3]
                 writer = csv.writer(file)
                 writer.writerow([formatted_time, cpu_percent, ram_percent, ram_used])
+    
+    def fps_monitor(self, fps):
+        with open(self.dirconfig["FPS_MONITOR"], mode='a', newline='') as fpsFile:
+            writer = csv.writer(fpsFile)
+            writer.writerow([fps])
 
     def stop_monitoring(self):
         self.video_run_flag = False

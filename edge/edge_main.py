@@ -79,8 +79,8 @@ def main():
                 #camera.show_images_opencv("RAW",initial_frame)              
             loop_end_time = time.time()
             if fps_enabled :
-                total_loop_time = loop_end_time - loop_start_time            
-                FPS = float('inf') if total_loop_time == 0 else 1 / total_loop_time
+                total_loop_time = loop_end_time - loop_start_time    
+                FPS = 1/total_loop_time if total_loop_time != 0 else float('inf')
                 print("FPS per loop : ", FPS)                                   
         except Exception :
             print("Error:", print(traceback.format_exc()))

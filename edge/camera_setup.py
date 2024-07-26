@@ -26,6 +26,7 @@ class CameraSetup:
             return frame
         else :
             print("Error capturing frame")
+            return None
                 
     def show_images_opencv(self, window, frame):
         frame_show = cv2.resize(frame, (640,480))
@@ -40,9 +41,3 @@ class CameraSetup:
         print(f"Byte size of resized from {frame.nbytes / 10000} kilobytes to {resized_frame.nbytes / 1000} kilobytes")
         print(f"Reduced by {(frame.nbytes - resized_frame.nbytes) / 1000} kilobytes")
         return resized_frame
-    
-    def compress_frame(self, frame):
-        encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), 50]
-        _, compressed_frame = cv2.imencode(".jpg", frame, encode_params)
-        frame_processed = cv2.imdecode(compressed_frame, cv2.IMREAD_COLOR)
-        return frame_processed

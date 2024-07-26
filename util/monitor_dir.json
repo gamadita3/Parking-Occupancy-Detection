@@ -1,8 +1,6 @@
 {
-    "CSV_MONITOR": "../monitor_result/MONITOR_MONDAY_MORNING.csv",
-    "CSV_FPS": "../monitor_result/FPS_MONDAY_MORNING.csv",
-    "CSV_DETECTION": "../monitor_result/DETECTION_MONDAY_MORNING.csv",
-    "CSV_PROTOCOL_DURATION": "../monitor_result/MQTT_MESSAGE_DURATION.csv",
+    "CSV_PROTOCOL_DURATION": "../monitor_result/MQTT_MESSAGE_DURATION_1.csv",
     "SYSTEM_MONITOR_CLOUD": "../monitor_result/SYSTEM_MONITOR_CLOUD.csv",
-    "SYSTEM_MONITOR_EDGE": "../monitor_result/SYSTEM_MONITOR_EDGE.csv"
+    "SYSTEM_MONITOR_EDGE": "../monitor_result/SYSTEM_MONITOR_EDGE_FULL12H_yolov8n_5.csv",
+    "FPS_MONITOR": "../monitor_result/FPS_MONITOR_FULL12H_yolov8n_5.csv"
 }

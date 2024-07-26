@@ -1,5 +1,5 @@
 {
     "THRESHOLD_MD": 20,
-    "CONTOUR_SENSITIVITY": 200,
+    "CONTOUR_SENSITIVITY": 250,
     "MOTIONDETECTION": "../motiondetection"
 }

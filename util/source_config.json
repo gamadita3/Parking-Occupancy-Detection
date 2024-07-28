@@ -1,5 +1,5 @@
 {
-    "DATASET": "../dataset/md_1h.mp4",
+    "DATASET": "../dataset/test_12h.mp4",
     "FRAME_WIDTH": 1280,
     "FRAME_HEIGHT": 960,
     "FRAME_WIDTH_RESIZE": 640,

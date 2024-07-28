@@ -11,7 +11,7 @@ class MQTTSetup:
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.frame_id = 0
-        self.ntp_server = "time.nist.gov"
+        self.ack = False #TESTING PROTOCOL
         
     def load_config(self, path):
         with open(path, 'r', encoding='utf-8') as file:
@@ -19,6 +19,7 @@ class MQTTSetup:
 
     def connect(self):
         self.client.connect(self.mqttConfig["HOST_ADDRESS"], self.mqttConfig["PORT"], keepalive=60)
+        self.client.subscribe([(self.mqttConfig["TOPIC_ACK"], self.mqttConfig["QOS"])]) #TESTING PROTOCOL
         self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
@@ -31,8 +32,12 @@ class MQTTSetup:
     def on_disconnect(self, client, userdata, rc):
         print("Unexpected MQTT disconnection!")
 
-    def on_message(self, client, userdata, message):
-        pass
+    def on_message(self, client, userdata, message): #TESTING PROTOCOL
+        if message.topic == self.mqttConfig["TOPIC_ACK"]: 
+            payload = message.payload.decode('utf-8')
+            if message.payload.decode('utf-8') == str(self.frame_id):
+                self.ack = True
+                print("Received ACK from cloud")
 
     def on_publish(self, client, userdata, mid):
         print(f"Message published successfully, Message ID: {mid}")
@@ -67,7 +72,9 @@ class MQTTSetup:
         }
     
         mqtt_payload = json.dumps(mqtt_message)
+        self.ack = False #TESTING PROTOCOL
         self.publish(self.mqttConfig["TOPIC_FRAME"], mqtt_payload)
+        
         
         print(f"Payload size for id {self.frame_id - 1}: {len(mqtt_payload) / 1000} kilobytes")
         print(f"Publishing frame with resolution {width}x{height} and jpeg quality {frame_quality}%")

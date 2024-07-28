@@ -3,6 +3,7 @@
     "PORT": 1883,
     "LIST_TOPIC_FRAME": "PSM-edge1,PSM-edge2,PSM-edge3",
     "TOPIC_FRAME": "PSM-edge1",
+    "TOPIC_ACK": "PSM-ack",
     "TOPIC_MODEL": "PSM-model",
     "LIST_TOPIC_SAMPLE": "PSM-edge1-sample,PSM-edge2-sample,PSM-edge2-sample",
     "TOPIC_SAMPLE": "PSM-edge1-sample",

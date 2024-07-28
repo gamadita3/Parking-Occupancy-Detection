@@ -4,7 +4,6 @@ import base64
 import paho.mqtt.client as mqtt
 import numpy as np
 import traceback
-import ntplib
 import time
 from datetime import datetime, timedelta
 
@@ -12,7 +11,6 @@ class MQTTSetup:
     def __init__(self):
         self.mqttConfig = self.load_config('../util/mqtt_config.json')
         self.client = mqtt.Client()
-        self.ntpClient = ntplib.NTPClient()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.data_store = {}
@@ -61,6 +59,7 @@ class MQTTSetup:
                 self.data_store[message.topic] = data
                 self.decode_frame_payload(message.topic, mqtt_message['frame']) 
                 print(f"|{message.topic}| id: {self.data_store[message.topic]['frame_id'] - 1} | Transmission duration: {self.data_store[message.topic]['duration']} | Payload size: {self.data_store[message.topic]['payload_size']} kilobytes")  
+                self.ackpub(mqtt_message['id']) #TESTING PROTOCOL
                 #self.printProtocol(message.topic)
                 
             else:
@@ -78,6 +77,10 @@ class MQTTSetup:
             print(f"Publish initiated for Message ID: {mid}")
         else:
             print(f"Failed to initiate publish, error code: {result}")
+            
+    def ackpub(self, frame_id): #TESTING PROTOCOL
+        print("Acknowledge publish for frame id:", frame_id)
+        self.publish(self.mqttConfig['TOPIC_ACK'], frame_id)
             
     def decode_frame_payload(self, topic, payload):
         payload_decode = base64.b64decode(payload)

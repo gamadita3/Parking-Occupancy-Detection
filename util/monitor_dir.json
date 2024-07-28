@@ -1,5 +1,5 @@
 {
-    "CSV_PROTOCOL_DURATION": "../monitor_result/MQTT_MESSAGE_DURATION_1.csv",
+    "PROTOCOL_DURATION": "../monitor_result/http_protocol_1h.csv",
     "SYSTEM_MONITOR_CLOUD": "../monitor_result/SYSTEM_MONITOR_CLOUD.csv",
     "SYSTEM_MONITOR_EDGE": "../monitor_result/SYSTEM_MONITOR_EDGE_FULL12H_yolov8n_5.csv",
     "FPS_MONITOR": "../monitor_result/FPS_MONITOR_FULL12H_yolov8n_5.csv"

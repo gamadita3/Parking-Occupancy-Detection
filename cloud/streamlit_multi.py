@@ -13,14 +13,18 @@ def main():
     # Streamlit sidebar options
     st.sidebar.title("Control Panel")
     inference_enabled = st.sidebar.checkbox("Enable Inference", value=False)
-    http_check = st.sidebar.checkbox("Use HTTP Protocol", value=False)
+    http_check = st.sidebar.checkbox("Use HTTP Protocol", value=True)
 
     # Setup objects
     display = DisplaySetup()
     inference = Inference()
-    system_monitor = SystemMonitor(True)
+    system_monitor = SystemMonitor(True) 
     source = SourceManager()
     source.start_protocol(http_check)
+    system_monitor.initial_monitor_protocol() #protocol monitoring
+    latest_frame_id = "-" #protocol monitoring
+    start_time = None #protocol monitoring
+    monitor_limit = False #protocol monitoring
 
     # Placeholder for video frame and detection counts
     frame_placeholders = {}
@@ -29,6 +33,18 @@ def main():
     while True:
         try:
             source.receive_data()
+            
+            #! LIMITER MONITOR PROTOCOL 
+            if source.data_store['PSM-edge1']['frame_id'] == 2:
+                print('MONITOR PROTOCOL START !!')
+                start_time = time.time()  # Start the timer when frame_id reaches 2
+                monitor_limit = True
+            if monitor_limit and (time.time() - start_time) > 600:  # 600 seconds = 10 minutes
+                monitor_limit = False
+                print('MONITOR PROTOCOL STOPPED !!')
+                break  # Stop the loop after 1 minutes
+            #!!!!!!!!!!!!!!!!!!!!!!!!
+            
             try:
                 for topic in source.topics:
                     if topic not in frame_placeholders:
@@ -41,7 +57,7 @@ def main():
                             stats_placeholders[topic].markdown(blank_text, unsafe_allow_html=True)
                             st.markdown('<div style="margin-bottom: 30px;"></div>', unsafe_allow_html=True)
                                
-                    if source.data_store[topic]['frame_id'] != "-":                  
+                    if (source.data_store[topic]['frame_id'] != "-"):              
                         if inference_enabled:
                             print(f"Perform inference topic {topic} frame id {source.data_store[topic]['frame_id']}")
                             inference.detect(source.data_store[topic]['frame'])
@@ -53,6 +69,10 @@ def main():
                             occupied_detection = source.data_store[topic]['occupied_detection']
                             empty_detection = source.data_store[topic]['empty_detection']
                             
+                        if monitor_limit and latest_frame_id != source.data_store[topic]['frame_id']:
+                            latest_frame_id = source.data_store[topic]['frame_id']
+                            system_monitor.monitor_protocol(source.data_store[topic]['frame_id'], source.data_store[topic]['payload_size'], source.data_store[topic]['duration']) #protocol monitoring  
+                        
                         frame_placeholders[topic].image(frame, channels="BGR", caption=f"{topic} | {source.data_store[topic]['time']}")
                         stats_text = f"<div style='text-align: center'>Topic {topic} | Total Detections: {occupied_detection + empty_detection} | Empty: {empty_detection} | Occupied: {occupied_detection}</div>"
                         stats_placeholders[topic].markdown(stats_text, unsafe_allow_html=True)
